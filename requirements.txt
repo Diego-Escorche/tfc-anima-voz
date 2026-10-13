@@ -1,4 +1,6 @@
-# Combinacion verificada: Python 3.11 + estas versiones, smoke test en verde.
+# Combinacion verificada: Python 3.11 y 3.12 + estas versiones, smoke test en verde.
+# Ultima instalacion verificada (12 oct 2026, Python 3.12.4): parselmouth 0.4.7,
+# pyworld 0.3.5, flask 3.1.3, numpy 2.5.4, scipy 1.18.1.
 praat-parselmouth>=0.4.7
 pyworld>=0.3.5
 flask>=3.0
