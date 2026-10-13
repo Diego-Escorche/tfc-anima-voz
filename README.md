@@ -255,7 +255,12 @@ python tests/test_setup.py                        # verificar instalación
 python src/tfc_voz/parametros.py                  # ver el espacio de parámetros
 python src/tfc_voz/genotipo.py                    # generar cohorte de prueba
 python src/tfc_voz/extraccion.py archivo.wav F    # extraer de un WAV (M o F)
+python informes/generar_informe.py                # informe de estado en PDF
 ```
+
+El informe de estado lee el avance por fase de `seguimiento-modulo-voz.md`; el
+resto del texto se edita en la sección `CONTENIDO` del script antes de cada
+informe nuevo. Necesita además `requirements-informes.txt`.
 
 Los módulos funcionan tanto importados como paquete (`from tfc_voz.genotipo
 import ...`, parado en `src/`) como corridos directo.

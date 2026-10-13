@@ -71,6 +71,7 @@
 - [ ] Confirmar con el equipo si algo de esto corresponde subir hoy (Práctica 7 — Clase 9)
 - [ ] Actualizar la tabla de estado del `README.md` (§3): todavía figuran como pendientes VCTK y la validación de `extraccion.py` con audio real, y §8 dice que solo Python 3.11 está verificado
 - [ ] `decisiones-fase1.md` cita `factores-no-geneticos-voz.md`, que no está en el repo: recuperarlo o sacar la referencia
+
 ---
 
 **Cómo usar este archivo:** marcá `[x]` a medida que termines cada tarea, o simplemente decime "marcá tal cosa como hecha" en el chat y lo actualizo yo.

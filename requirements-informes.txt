@@ -1,0 +1,4 @@
+# Solo para generar los informes en PDF (informes/generar_informe.py).
+# Se instala ademas de requirements.txt, en el mismo .venv.
+reportlab>=4.0
+matplotlib>=3.8

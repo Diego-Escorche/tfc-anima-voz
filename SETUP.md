@@ -140,6 +140,10 @@ tfc-anima-voz/
 ├── informe-fase1.md
 ├── seguimiento-modulo-voz.md
 ├── requirements.txt
+├── requirements-informes.txt  # solo para los informes en PDF (paso 8)
+├── informes/
+│   ├── generar_informe.py
+│   └── informe-estado-AAAA-MM-DD.pdf
 ├── src/
 │   └── tfc_voz/
 │       ├── __init__.py
@@ -282,6 +286,25 @@ Salida obtenida el 12 oct 2026:
 
 Si da exactamente esto, la extraccion esta funcionando igual que en la
 instalacion verificada.
+
+---
+
+## 8. (Opcional) Informes de estado en PDF
+
+`informes/generar_informe.py` arma un PDF con el avance por fase (leido de
+`seguimiento-modulo-voz.md`), los resultados y los proximos pasos. Necesita
+dos librerias mas, en el mismo entorno:
+
+```
+python -m pip install -r requirements-informes.txt
+python informes/generar_informe.py                    # fecha de hoy
+python informes/generar_informe.py --fecha 2026-10-13 # otra fecha
+```
+
+Sale en `informes/informe-estado-AAAA-MM-DD.pdf`. Antes de generar uno nuevo,
+editar la seccion `CONTENIDO` del script (resumen, resultados, hallazgos); el
+cronograma y la tabla de fases se actualizan solos con los `[x]` del
+seguimiento.
 
 ---
 
