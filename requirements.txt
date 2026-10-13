@@ -1,0 +1,6 @@
+# Combinacion verificada: Python 3.11 + estas versiones, smoke test en verde.
+praat-parselmouth>=0.4.7
+pyworld>=0.3.5
+flask>=3.0
+numpy>=1.26
+scipy>=1.11

@@ -1,0 +1,9 @@
+# Entorno virtual (se rehace con SETUP.md)
+.venv/
+
+# Corpus y datos descargados (VCTK pesa varios GB)
+data/
+
+# Python
+__pycache__/
+*.pyc
