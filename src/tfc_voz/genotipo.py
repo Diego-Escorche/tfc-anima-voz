@@ -35,7 +35,14 @@ class IndividuoSintetico:
         return self.scores_geneticos[parametro] + self.scores_ambientales[parametro]
 
 
-def generar_cohorte_sintetica(n_individuos: int, semilla: int = 42) -> list[IndividuoSintetico]:
+# Misma semilla que cohorte_anima.csv (compartida por los tres modulos). Unifica
+# el numero declarado, pero NO hace que este generador reproduzca ese archivo:
+# cohorte_anima.csv es la fuente de verdad para el modelo y los resultados, y
+# este generador queda solo para los tests.
+SEMILLA = 20261019
+
+
+def generar_cohorte_sintetica(n_individuos: int, semilla: int = SEMILLA) -> list[IndividuoSintetico]:
     """Genera una cohorte de individuos sinteticos siguiendo la Opcion A."""
     rng = np.random.default_rng(semilla)
     cohorte = []

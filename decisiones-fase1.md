@@ -1,83 +1,129 @@
-# Decisiones de la Fase 1 -- modulo de Voz
+# Decisiones de diseño — módulo de Voz
 
-## Corpus de validacion
-**VCTK Corpus** (no TIMIT -- sin acceso). Gratuito, sin membresia LDC,
-109 hablantes con speaker-info.txt (edad, sexo, acento).
-Fuente: https://datashare.ed.ac.uk/handle/10283/3443
+**Actualizado:** 20/10/2026 (regla de lectura de la S6 y VTL directo).
 
-## Espacio de parametros y heredabilidad
+## Espacio de parámetros y heredabilidad
 
-Todos los valores estan expresados en **escala h2-SNP** (fraccion de varianza
-fenotipica explicada por variantes comunes), que es la escala en la que trabaja
+Todos los valores están expresados en **escala h²-SNP** (fracción de varianza
+fenotípica explicada por variantes comunes), que es la escala en la que trabaja
 el modelo.
 
-| Parametro | Unidad | h2 | Evidencia | Fuente |
-|---|---|---|---|---|
-| f0_medio | Hz | 0.17 | directa | Gisladottir et al. 2023 (IC95% 9-24%) |
-| f0_variabilidad | Hz (SD) | 0.13 | directa | Gisladottir et al. 2023 |
-| f1 | Hz | 0.09 | directa | Gisladottir et al. 2023 |
-| f2 | Hz | 0.14 | directa | Gisladottir et al. 2023 |
-| f3 | Hz | 0.08 | directa | Gisladottir et al. 2023 |
-| vtl | cm | 0.13 | **derivada** | Dediu et al. 2022, Tabla 2 (SVTh = 0.26 en gemelos, deflacionado) |
-| jitter | % | 0.05 | **debil** | Van Lierde 2005 (n.s.) / Lima et al. 2024 (ICC MZ 0.374) |
-| hnr | dB | 0.05 | **debil** | Lima et al. 2024 (ICC MZ 0.366) |
+| Parámetro | Unidad | h² | IC95 % | Evidencia | Fuente |
+|---|---|---|---|---|---|
+| f0_medio | Hz | 0.1027 | 0.0335 a 0.1719 | directa | Gisladóttir et al. 2023, S6: MedianF0_MeasureVowels |
+| f0_variabilidad | Hz (SD) | 0.0410 | −0.0303 a 0.1123 | directa | Gisladóttir et al. 2023, S6: StdF0_MeasureVowels |
+| f1 | Hz | 0.0619 | −0.0091 a 0.1329 | directa | Gisladóttir et al. 2023, S6: MedianF1_MeasureVowels |
+| f2 | Hz | 0.1353 | 0.0655 a 0.2051 | directa | Gisladóttir et al. 2023, S6: MedianF2_MeasureVowels |
+| f3 | Hz | 0.0644 | −0.0009 a 0.1297 | directa | Gisladóttir et al. 2023, S6: MedianF3_MeasureVowels |
+| vtl | cm | 0.0606 | −0.0090 a 0.1302 | directa | Gisladóttir et al. 2023, S6: VTL |
+| jitter | % | 0.05 | — | **débil** | Van Lierde 2005 (n.s.) / Lima et al. 2024 (ICC MZ 0.374) |
+| hnr | dB | 0.05 | — | **débil** | Lima et al. 2024 (ICC MZ 0.366) |
 
-### Por que "derivada" y "debil" en vez de "placeholder"
+Promedio: **0,0707**. Fuente de la S6: hoja S6_Heritability de
+`abq2969_Tables_S1_to_S11.xlsx`, volcada a
+`referencias/tabla-s6-heredabilidades.csv`. `tests/test_parametros.py` verifica
+que los valores cargados en `parametros.py` coincidan con ese CSV.
 
-Los tres valores que antes eran placeholder ciego ahora tienen respaldo
-bibliografico, pero de distinta calidad que los cinco de Gisladottir:
+### Regla de lectura de la S6 (adoptada el 20/10/2026)
 
-**VTL (0.13).** Dediu et al. 2022 SI da el numero: en su Tabla 2, la medida
-SVTh (largo del tracto vocal supralaringeo horizontal, usando prosthion y
-atlas) tiene h2 = 0.26 (IC95% 0.03-0.62), clasificada como clase II
-("evidencia fuerte"); la medida vertical SVTv da h2 = 0.24 (IC95% 0.00-0.74),
-clase IV ("evidencia circunstancial"). El placeholder anterior (0.35) era
-demasiado alto.
+**Regla agregada de cinco vocales**, aprobada por Diego el 20/10/2026: para cada
+parámetro se toma la fila medida sobre el conjunto de las vocales
+[i, a, ɔ, u, ɛ].
 
-Pero **ese 0.26 no es h2-SNP**: es heredabilidad de sentido estrecho estimada
-en un diseno de gemelos, que captura TODA la varianza genetica aditiva. El
-h2-SNP solo captura la parte explicada por variantes comunes genotipadas y
-suele ser bastante menor. Mezclar 0.26 (gemelos) con 0.17 (SNP) en el mismo
-espacio inflaria artificialmente el aporte genetico de VTL frente a F0.
+- **Por qué no los máximos.** Los valores que estaban cargados eran el más alto de
+  cada medida entre todas las tareas y vocales. De las 72 medidas del estudio, 41
+  quedan por debajo del 5 %, así que tomar el mejor valor de cada rasgo es una
+  envolvente superior: el mismo sesgo de optimismo que el proyecto declara
+  combatir. Los cinco máximos tenían IC95 % que excluían el cero; con la regla
+  agregada, tres de esos cinco lo cruzan.
+- **Por qué no la tarea de lectura.** F1, F2 y F3 se midieron sólo en tareas de
+  vocales, nunca en lectura. La medida agregada de vocales es la única que existe
+  para todos los rasgos.
+- **Los máximos no se borran.** Quedan en `H2_MAXIMOS` (`parametros.py`) para un
+  análisis de sensibilidad. El modelo no los usa.
 
-Decision: deflacionar a la mitad -> **0.13**. El factor 1/2 es un supuesto
-explicito del proyecto, no un valor publicado, y debe declararse como tal en
-la memoria. Es facilmente ajustable en `parametros.py` si mas adelante se
-decide otro criterio.
+| Parámetro | Máximo anterior | Fila del máximo |
+|---|---|---|
+| f0_medio | 0.1675 | MedianF0_MeasureReading |
+| f0_variabilidad | 0.1276 | StdF0_MeasureReading |
+| f1 | 0.0872 | MedianF1_MeasureA |
+| f2 | 0.1353 | MedianF2_MeasureVowels (coincide con la regla) |
+| f3 | 0.0815 | MedianF3_MeasureO |
 
-**Jitter (0.05) y HNR (0.05).** La literatura de gemelos es chica y
-contradictoria: Van Lierde et al. 2005 (Journal of Voice) explicitamente NO
-obtuvo correlaciones significativas para jitter ni shimmer en gemelos
-monocigoticos, mientras que Lima et al. 2024 (gemelas brasileras) reporta
-correlaciones intra-par debiles pero significativas (ICC 0.374 para jitter,
-0.366 para HNR). Ninguno de los dos da un h2-SNP.
+Promedio de Voz según la regla: 10,4 % con máximos y el VTL viejo; 9,6 % con
+máximos y el VTL corregido; **7,1 % con la regla agregada y el VTL corregido**.
 
-Ese patron es consistente con lo que reporta Gisladottir et al. 2023: de sus
-72 medidas acusticas, **41 tienen h2-SNP por debajo del 5%**. Un valor
-conservador de 0.05 para jitter y HNR es coherente con esa distribucion y no
-inventa senal donde la evidencia no la respalda.
+### Escala de las h²
 
-**Implicacion para la hipotesis:** se espera que jitter y HNR muestren un
-delta-R2 practicamente nulo. Eso NO es una falla del modelo, es el resultado
-esperado, y refuerza el argumento del gradiente: incluso dentro del dominio
-de Voz hay parametros donde el genotipo aporta y otros donde no.
+Gisladóttir log-transformó cada rasgo y lo ajustó por edad, IMC, altura y
+micrófono, por separado dentro de cada sexo, **antes** de estimar h². Estas h²
+están entonces por encima de sexo, edad y altura, no incluidas en ellas. Esto
+desarma la afirmación de que la línea base poblacional ya captura casi toda la
+señal heredable de la voz.
+
+Queda abierto si la h² es fracción de la varianza residual y no de la total. Si
+es así, el techo del ΔR² sobre una línea base con sexo y edad es
+h² × (1 − R² de la línea base), y aplica igual a Rostro.
+
+### VTL: valor directo de la S6
+
+La fila VTL de la S6 mide el largo del tracto vocal (medida agregada de F1 a F4
+sobre las cinco vocales) directamente en escala h²-SNP: **0.0606**
+(IC95 % −0.009 a 0.130).
+
+Hasta el 20/10/2026 el VTL estaba cargado como "derivado": se tomaba el h² de
+gemelos de Dediu et al. 2022 (SVTh = 0.26) y se lo dividía por dos, con un
+factor 1/2 supuesto por el proyecto. Con el valor directo, ese supuesto queda
+descartado: el cociente real entre h²-SNP y h² de gemelos es 0.0606 / 0.26 =
+**0,23**, no 0,5. El VTL estaba sobreestimado al doble.
+
+### Jitter y HNR (0.05, evidencia débil)
+
+No están en la S6. La literatura de gemelos es chica y contradictoria: Van
+Lierde et al. 2005 (Journal of Voice) explícitamente NO obtuvo correlaciones
+significativas para jitter ni shimmer en gemelos monocigóticos, mientras que
+Lima et al. 2024 (gemelas brasileras) reporta correlaciones intra-par débiles
+pero significativas (ICC 0.374 para jitter, 0.366 para HNR). Ninguno de los dos
+da un h²-SNP.
+
+Ese patrón es consistente con Gisladóttir et al. 2023: de sus 72 medidas
+acústicas, **41 tienen h²-SNP por debajo del 5 %**. Un valor conservador de 0.05
+para jitter y HNR es coherente con esa distribución y no inventa señal donde la
+evidencia no la respalda.
+
+**Implicación para la hipótesis:** se espera que jitter y HNR muestren un ΔR²
+prácticamente nulo. Eso NO es una falla del modelo, es el resultado esperado:
+incluso dentro del dominio de Voz hay parámetros donde el genotipo aporta y otros
+donde no.
 
 ### Pendiente menor
-Confirmar si existe algun estudio posterior a 2024 con h2-SNP directo para
+
+Confirmar si existe algún estudio posterior a 2024 con h²-SNP directo para
 jitter/HNR. Si aparece, reemplaza el valor conservador.
 
-## Representacion del genotipo sintetico -- Opcion A
+## Representación del genotipo sintético — Opción A
 
-Por parametro: `score_total = score_genetico + score_ambiental`, con
-`score_genetico ~ N(0, h2)` y `score_ambiental ~ N(0, 1-h2)`.
+Por parámetro: `score_total = score_genetico + score_ambiental`, con
+`score_genetico ~ N(0, h²)` y `score_ambiental ~ N(0, 1-h²)`.
 
-Se decidio NO simular SNPs individuales (Opcion B) en esta primera version,
-para no consumir tiempo de la Fase 2 en el parseo de 1000 Genomes. Si
-sobra margen mas adelante, la variante rs11046212-T de *ABCC9* (AF ~47.7%
-en Europa, efecto +2.1 Hz/alelo segun Gisladottir et al. 2023) queda como
-candidata para una version mas fiel de f0_medio especificamente.
+Se decidió NO simular SNPs individuales (Opción B), para no consumir tiempo en
+el parseo de 1000 Genomes. Si sobra margen más adelante, la variante
+rs11046212-T de *ABCC9* (AF ~47.7 % en Europa, efecto +2.1 Hz/alelo según
+Gisladóttir et al. 2023) queda como candidata para una versión más fiel de
+f0_medio específicamente.
 
 ## Factores excluidos del alcance
-Pubertad, envejecimiento, trauma/lesion nerviosa, enfermedad, tabaquismo,
-entrenamiento vocal aprendido, trastornos funcionales. Todos quedan absorbidos
-en el termino ambiental por construccion -- ver `factores-no-geneticos-voz.md`.
+
+Estos factores modifican la voz pero no se modelan uno por uno:
+
+- Pubertad
+- Envejecimiento
+- Trauma o lesión nerviosa (p. ej. del nervio laríngeo)
+- Enfermedad
+- Tabaquismo
+- Entrenamiento vocal aprendido (canto, actuación)
+- Trastornos funcionales de la voz
+
+Todos quedan absorbidos en el término ambiental **por construcción**: la h²-SNP
+publicada se midió sobre poblaciones reales que ya los incluyen, así que no forman
+parte de la señal genética y no hace falta código extra para excluirlos.

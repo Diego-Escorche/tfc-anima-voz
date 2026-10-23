@@ -1,0 +1,73 @@
+Measure,H2,SE,LowerCI,UpperCI,Task,Type,Statistic,Vowel
+MedianF0_MeasureReading,0.1675,0.0391,0.090864,0.244136,Reading,f0,Median,
+MedianF2_MeasureVowels,0.1353,0.0356,0.065524,0.205076,Vowels,F2,Median,"[i, a, ɔ, u, ɛ]"
+StdF0_MeasureReading,0.1276,0.0372,0.054688,0.200512,Reading,f0,SD,
+MedianF2_MeasureU,0.1273,0.0398,0.049292,0.205308,Vowels,F2,Median,[u]
+MedianF0_Global,0.125,0.0339,0.058556,0.191444,All,f0,Median,
+MedianF2_MeasureE,0.1214,0.0334,0.055936,0.186864,Vowels,F2,Median,[ɛ]
+StdF3_MeasureA,0.1116,0.0573,-0.000708,0.223908,Vowels,F3,SD,[a]
+MedianF2_MeasureA,0.1102,0.04,0.0318,0.1886,Vowels,F2,Median,[a]
+MedianF0_MeasureVowels,0.1027,0.0353,0.033512,0.171888,Vowels,f0,Median,"[i, a, ɔ, u, ɛ]"
+MedianF2_MeasureO,0.1022,0.036,0.03164,0.17276,Vowels,F2,Median,[ɔ]
+MedianF0_MeasureWords,0.1014,0.032,0.03868,0.16412,Words,f0,Median,
+VSA4,0.0918,0.0342,0.024768,0.158832,Vowels,"Aggregated vowel measure (F1, F2)",,"[i, a, ɔ, u]"
+FCR,0.0918,0.0308,0.031432,0.152168,Vowels,"Aggregated vowel measure (F1, F2)",,"[i, a, u]"
+MedianF4_MeasureI,0.0887,0.0414,0.007556,0.169844,Vowels,F4,Median,[i]
+MedianF1_MeasureA,0.0872,0.0338,0.020952,0.153448,Vowels,F1,Median,[a]
+MedianF3_MeasureO,0.0815,0.0355,0.01192,0.15108,Vowels,F3,Median,[ɔ]
+MedianF1_MeasureO,0.0775,0.0366,0.005764,0.149236,Vowels,F1,Median,[ɔ]
+MedianF2_MeasureI,0.0748,0.0347,0.006788,0.142812,Vowels,F2,Median,[i]
+StdF1_MeasureLongA,0.0716,0.0417,-0.010132,0.153332,Vowels,F1,SD,long [a]
+MedianF1_MeasureE,0.0677,0.0371,-0.005016,0.140416,Vowels,F1,Median,[ɛ]
+MedianF3_MeasureI,0.0675,0.0359,-0.002864,0.137864,Vowels,F3,Median,[i]
+MedianF4_MeasureO,0.0675,0.0409,-0.012664,0.147664,Vowels,F4,Median,[ɔ]
+MedianF3_MeasureVowels,0.0644,0.0333,-0.000868,0.129668,Vowels,F3,Median,"[i, a, ɔ, u, ɛ]"
+StdF2_MeasureE,0.0636,0.0363,-0.007548,0.134748,Vowels,F2,SD,[ɛ]
+MedianF1_MeasureVowels,0.0619,0.0362,-0.009052,0.132852,Vowels,F1,Median,"[i, a, ɔ, u, ɛ]"
+VTL,0.0606,0.0355,-0.00898,0.13018,Vowels,"Aggregated vowel measure (F1, F2, F3, F4)",,"[i, a, ɔ, u, ɛ]"
+StdF2_MeasureVowels,0.0604,0.0308,3.2e-05,0.120768,Vowels,F2,SD,"[i, a, ɔ, u, ɛ]"
+MedianF3_MeasureU,0.0598,0.0342,-0.007232,0.126832,Vowels,F3,Median,[u]
+MedianF2_MeasureLongA,0.0571,0.037,-0.01542,0.12962,Vowels,F2,Median,long [a]
+StdF0_MeasureSpilaRas,0.057,0.0355,-0.01258,0.12658,Words,f0,SD,
+MedianF3_MeasureA,0.0552,0.0371,-0.017516,0.127916,Vowels,F3,Median,[a]
+MedianF4_MeasureU,0.0491,0.0399,-0.029104,0.127304,Vowels,F4,Median,[u]
+SkewF0_MeasureWords,0.0468,0.0359,-0.023564,0.117164,Words,f0,skew,
+StdF3_MeasureVowels,0.0453,0.032,-0.01742,0.10802,Vowels,F3,SD,"[i, a, ɔ, u, ɛ]"
+MedianF4_MeasureA,0.0448,0.0386,-0.030856,0.120456,Vowels,F4,Median,[a]
+StdF3_MeasureE,0.0431,0.037,-0.02942,0.11562,Vowels,F3,SD,[ɛ]
+StdF0_MeasureVowels,0.041,0.0364,-0.030344,0.112344,Vowels,f0,SD,"[i, a, ɔ, u, ɛ]"
+StdF2_MeasureA,0.0397,0.0404,-0.039484,0.118884,Vowels,F2,SD,[a]
+StdF3_MeasureLongA,0.0378,0.0343,-0.029428,0.105028,Vowels,F3,SD,long [a]
+SkewF0_MeasureReading,0.0374,0.0346,-0.030416,0.105216,Reading,f0,skew,
+MedianF3_MeasureE,0.037,0.0329,-0.027484,0.101484,Vowels,F3,Median,[ɛ]
+MedianF4_MeasureVowels,0.0351,0.0346,-0.032716,0.102916,Vowels,F4,Median,"[i, a, ɔ, u, ɛ]"
+StdF4_MeasureO,0.0347,0.0335,-0.03096,0.10036,Vowels,F4,SD,[ɔ]
+MedianF3_MeasureLongA,0.0319,0.0356,-0.037876,0.101676,Vowels,F3,Median,long [a]
+MedianF0_MeasureLongA,0.0312,0.0314,-0.030344,0.092744,Vowels,f0,Median,long [a]
+StdF1_MeasureA,0.026,0.034,-0.04064,0.09264,Vowels,F1,SD,[a]
+MedianF1_MeasureU,0.0245,0.0361,-0.046256,0.095256,Vowels,F1,Median,[u]
+MedianF4_MeasureLongA,0.0238,0.0396,-0.053816,0.101416,Vowels,F4,Median,long [a]
+StdF4_MeasureLongA,0.0226,0.0327,-0.041492,0.086692,Vowels,F4,SD,long [a]
+StdF3_MeasureU,0.017,0.0346,-0.050816,0.084816,Vowels,F3,SD,[u]
+StdF4_MeasureU,0.0082,0.0332,-0.056872,0.073272,Vowels,F4,SD,[u]
+StdF4_MeasureVowels,0.0068,0.0327,-0.057292,0.070892,Vowels,F4,SD,"[i, a, ɔ, u, ɛ]"
+StdF1_MeasureE,0.0045,0.0371,-0.068216,0.077216,Vowels,F1,SD,[ɛ]
+MedianF1_MeasureLongA,0.0032,0.0316,-0.058736,0.065136,Vowels,F1,Median,long [a]
+StdF4_MeasureE,0.003,0.0632,-0.120872,0.126872,Vowels,F4,SD,[ɛ]
+StdF1_MeasureVowels,0.0029,0.035,-0.0657,0.0715,Vowels,F1,SD,"[i, a, ɔ, u, ɛ]"
+StdF1_MeasureO,0.0018,0.0365,-0.06974,0.07334,Vowels,F1,SD,[ɔ]
+StdF1_MeasureI,-0.0007,0.0413,-0.081648,0.080248,Vowels,F1,SD,[i]
+StdF2_MeasureI,-0.0012,0.0434,-0.086264,0.083864,Vowels,F2,SD,[i]
+StdF2_MeasureO,-0.0053,0.0486,-0.100556,0.089956,Vowels,F2,SD,[ɔ]
+MedianF4_MeasureE,-0.0079,0.0332,-0.072972,0.057172,Vowels,F4,Median,[ɛ]
+StdF4_MeasureA,-0.0113,0.0358,-0.081468,0.058868,Vowels,F4,SD,[a]
+StdF3_MeasureO,-0.0123,0.0376,-0.085996,0.061396,Vowels,F3,SD,[ɔ]
+SkewF0_MeasureLongA,-0.0125,0.0352,-0.081492,0.056492,Vowels,f0,skew,long [a]
+SkewF0_MeasureVowels,-0.014,0.0318,-0.076328,0.048328,Vowels,f0,skew,"[i, a, ɔ, u, ɛ]"
+StdF3_MeasureI,-0.018,0.0366,-0.089736,0.053736,Vowels,F3,SD,[i]
+StdF2_MeasureLongA,-0.0252,0.0378,-0.099288,0.048888,Vowels,F2,SD,long [a]
+StdF2_MeasureU,-0.0271,0.0677,-0.159792,0.105592,Vowels,F2,SD,[u]
+MedianF1_MeasureI,-0.0281,0.0383,-0.103168,0.046968,Vowels,F1,Median,[i]
+StdF4_MeasureI,-0.0392,0.0323,-0.102508,0.024108,Vowels,F4,SD,[i]
+StdF1_MeasureU,-0.0393,0.034,-0.10594,0.02734,Vowels,F1,SD,[u]
+StdF0_MeasureLongA,-0.0668,0.0306,-0.126776,-0.006824,Vowels,f0,SD,long [a]

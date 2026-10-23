@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "lento: tarda mas de un minuto (VZ-07); se saltea con -m 'not lento'",
+]
