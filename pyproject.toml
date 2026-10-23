@@ -1,5 +1,5 @@
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]  # "." para importar anima_spine, copiado en la raiz
 testpaths = ["tests"]
 markers = [
     "lento: tarda mas de un minuto (VZ-07); se saltea con -m 'not lento'",
