@@ -21,7 +21,7 @@
 ## Fase 2 — Cohorte compartida y contrato de salida (27 oct – 2 nov)
 - [x] Columna vertebral `anima_spine` 1.1 en el repo: `cohorte_anima.csv` v1.1 (no la v1.0), congelada con huella SHA-256; `spine.verificar` pasa (23/10)
 - [x] Etapa 1: `cohorte.py` (envoltorio de `spine.cargar`) y `poblacion.py` (efectos de sexo, edad y subpoblación con su fuente); VZ-06 en verde sobre la cohorte real y la generada (23/10)
-- [ ] Etapa 2: `fenotipo.py`, modelo generativo con heredabilidad residual
+- [x] Etapa 2: `fenotipo.py`, modelo generativo con heredabilidad residual; h², d, r, c y pendientes de edad recuperados en los 8 parámetros con 200.000 personas (23/10)
 - [ ] Formato de salida (adelantado de la Etapa 6): `salida.py` valida y escribe tres archivos — predicciones, intervalos en seis niveles y barrido de 20 réplicas
 - [ ] Relevamiento de `extraccion.py` (sin cambiarlo) e informe de cierre del bloque, `informes/avance-bloque-1.md`
 
