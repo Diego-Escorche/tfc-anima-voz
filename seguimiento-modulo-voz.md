@@ -1,6 +1,6 @@
 # Seguimiento — módulo de Voz
 
-**Última actualización:** 23 oct 2026
+**Última actualización:** 23 oct 2026 (tarde)
 **Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 23/10: Fase 1 completa (incluida la Etapa 0, que pasa) y la columna vertebral `anima_spine` 1.1 copiada y verificada.
 
 **Riesgo principal:** que el código no arranque. Venía sin avance desde fines de septiembre; la semana 1 es a propósito el hito más barato.
@@ -86,6 +86,12 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   3. **Corrección iterativa** de jitter, variabilidad de F0 y HNR: hasta 3 iteraciones por realización, con el error residual informado. Plan B (pulsos con períodos exactos) sólo con aprobación de Diego.
 - **23/10 — Semilla por parámetro:** el índice de `default_rng([semilla, indice])` es fijo por nombre (f0_medio 0, f0_variabilidad 1, jitter 2, hnr 3, f1 4, f2 5, f3 6, vtl 7). Un parámetro nuevo recibe el número siguiente, así que reordenar no cambia los valores (Diego).
 - **23/10 — Ventana de la síntesis:** 9 a 21 dic, en paralelo con el cierre de resultados (Diego).
+- **23/10 — Respuestas al avance del bloque 1** (brief del prototipo, "Respuestas al avance del 23/10"):
+  - **Tests "a edad fija" de la Etapa 2:** se adopta la propuesta de `informes/propuesta-tests-edad-fija.md`, con un cambio: r y c se estiman de los residuos sin usar el c verdadero, y c suma un test propio.
+  - **Fuentes de f0_medio en `poblacion.py`:** b_hombre = 0 y q_mujer quedan como "derivado", anotados como lectura de Gisladóttir (el cambio de los hombres empieza a los 60; el de las mujeres termina a los 60).
+  - **`salida.py`:** las tres funciones reciben el DataFrame de `leer_cohorte` y toman de ahí los ids de prueba.
+  - **Escala de `f0_variabilidad`:** si `extraccion.py` la da en Hz, la escala del módulo es el logaritmo de ese valor (se confirma en el relevamiento).
+  - **Desvíos aprobados:** `n` en `generar_cohorte`, `pyproject.toml`, `.gitattributes` y `.gitignore`, y el criterio de tipos de fuente.
 
 ## Decisiones pendientes del grupo (bloquean)
 

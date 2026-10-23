@@ -118,11 +118,11 @@ EFECTOS = {
         fuente=_fuentes_gisladottir(
             "Vowels.MedianF0",
             edad_b_mujer="dato: texto de Gisladottir et al. 2023, mujeres -0,8 Hz por anio hasta los 60",
-            edad_b_hombre="derivado: el texto de Gisladottir et al. 2023 solo informa cambio en "
-                          "hombres desde los 60; antes de los 60, 0",
+            edad_b_hombre="derivado: lectura de Gisladottir et al. 2023: el cambio de F0 en "
+                          "hombres empieza a los 60, asi que antes de los 60 la pendiente es 0",
             quiebre={
-                "q_mujer": "derivado: anula la pendiente de mujeres desde los 60 (el texto de "
-                           "Gisladottir et al. 2023 informa la caida hasta los 60)",
+                "q_mujer": "derivado: lectura de Gisladottir et al. 2023: la caida de F0 en "
+                           "mujeres termina a los 60, asi que desde los 60 se anula su pendiente",
                 "q_hombre": "dato: texto de Gisladottir et al. 2023, hombres +0,6 Hz por anio "
                             "desde los 60",
             })),
