@@ -78,6 +78,16 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
 - [ ] Elegibilidad de cada uno para la defensa de febrero (el único riesgo que no se arregla con horas)
 - [ ] (menor) Algún estudio post-2024 con h²-SNP directo para jitter/HNR
 
+## Riesgos abiertos para la síntesis de audio (Etapa 7 del brief del prototipo)
+
+Salieron de la prueba de factibilidad del 23/10 (Etapa 0: pasa, F0 medida 120,00 Hz contra 120 pedidos). Detalle y tablas en `informes/etapa0-factibilidad-sintesis.md`.
+
+- [ ] **El medidor de formantes falla sobre la vocal sintética.** Con la configuración de `extraccion.py` (Burg, 5 formantes, techo 5.000 Hz), F2 y F3 salen mal numerados (1.345 y 1.499 Hz en vez de 1.500 y 2.500) y el VTL medido queda fuera de rango. Con 4 formantes dan 1.466 y 2.423 Hz. Cambiar `extraccion.py` lo decide Diego.
+- [ ] **El VTL no puede hacer ida y vuelta tal como está definido.** En la síntesis, el VTL sólo fija F4 y F5, pero `extraccion.py` lo calcula desde F1 a F3. Lo que mide es el VTL implícito en F1 a F3 (en la prueba, 17,5 cm en vez de 17).
+- [ ] **El flutter mueve dos parámetros a la vez.** Con flutter 0,25 cambian el jitter (0,3 %) y la variabilidad de F0 (0,73 Hz). Falta probar un punto de pitch por período con perturbación aleatoria, que el brief admite.
+- [ ] **El ruido de aspiración empeora la medición de formantes.** Con aspiración a 60 dB el HNR baja a 21 dB, pero F2 se mide en 954 Hz. La correspondencia del HNR tiene que tenerlo en cuenta.
+- [ ] **La variabilidad de F0 necesita un contorno.** Con dos puntos de pitch fijos da 0,001 Hz. La Etapa 7 ya prevé una variación lenta alrededor de la media.
+
 ## Correcciones pendientes en el documento individual (.docx)
 
 - [ ] Sacar la afirmación de que la línea base ya captura casi toda la señal heredable de la voz (es falsa: las h² están netas de sexo, edad y altura)
