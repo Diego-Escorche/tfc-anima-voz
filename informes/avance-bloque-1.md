@@ -13,7 +13,7 @@ Informe pedido por el "Brief para IA programadora — prototipo autónomo del m�
 | Seguimiento al día, antes de la Etapa 1 | **Hecho** (23/10) | `seguimiento-modulo-voz.md` | `862b8be`, `9598e4c` |
 | Etapa 1: cohorte y efectos poblacionales | **Hecho** (23/10), con los ajustes que pidió el manager | `src/tfc_voz/cohorte.py`, `src/tfc_voz/poblacion.py`, `tests/test_cohorte.py`, `tests/test_poblacion.py`, `seguimiento-modulo-voz.md` | `b3f8092`, `1791981` |
 | Etapa 2: fenotipos | **Hecho** (23/10) | `src/tfc_voz/fenotipo.py`, `tests/test_fenotipo.py`, `seguimiento-modulo-voz.md` | `76008fb` |
-| Datos de Voz para la calibración de Tomás | **Hecho** (26/10) | `scripts/exportar_para_calibracion.py`, `informes/voz_para_calibracion.csv`, `tests/test_exportar_para_calibracion.py`, `seguimiento-modulo-voz.md` | ver `git log` (commit de este paso) |
+| Datos de Voz para la calibración de Tomás | **Hecho** (26/10) | `scripts/exportar_para_calibracion.py`, `informes/voz_para_calibracion.csv`, `tests/test_exportar_para_calibracion.py`, `seguimiento-modulo-voz.md` | `333940a` |
 | Formato de salida (`salida.py`) | **Sin empezar** | — | — |
 | Relevamiento de `extraccion.py` | **Sin empezar** | — | — |
 
