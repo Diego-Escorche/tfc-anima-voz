@@ -1,6 +1,6 @@
 # Avance del bloque 1 — módulo de Voz (23/10 al 2/11)
 
-**Última actualización:** 23/10/2026 (tarde) · **Estado del bloque:** en curso. Preparación, Etapa 0, seguimiento, Etapa 1 y Etapa 2 hechos. Faltan el formato de salida (`salida.py`) y el relevamiento de `extraccion.py`.
+**Última actualización:** 26/10/2026 · **Estado del bloque:** en curso. Preparación, Etapa 0, seguimiento, Etapas 1 y 2 y los datos para la calibración de Tomás, hechos. Faltan el formato de salida (`salida.py`) y el relevamiento de `extraccion.py`.
 
 Informe pedido por el "Brief para IA programadora — prototipo autónomo del módulo de Voz", para que Diego se lo pase a Claude. Se completa al cerrar cada paso del bloque.
 
@@ -13,6 +13,7 @@ Informe pedido por el "Brief para IA programadora — prototipo autónomo del m�
 | Seguimiento al día, antes de la Etapa 1 | **Hecho** (23/10) | `seguimiento-modulo-voz.md` | `862b8be`, `9598e4c` |
 | Etapa 1: cohorte y efectos poblacionales | **Hecho** (23/10), con los ajustes que pidió el manager | `src/tfc_voz/cohorte.py`, `src/tfc_voz/poblacion.py`, `tests/test_cohorte.py`, `tests/test_poblacion.py`, `seguimiento-modulo-voz.md` | `b3f8092`, `1791981` |
 | Etapa 2: fenotipos | **Hecho** (23/10) | `src/tfc_voz/fenotipo.py`, `tests/test_fenotipo.py`, `seguimiento-modulo-voz.md` | `76008fb` |
+| Datos de Voz para la calibración de Tomás | **Hecho** (26/10) | `scripts/exportar_para_calibracion.py`, `informes/voz_para_calibracion.csv`, `tests/test_exportar_para_calibracion.py`, `seguimiento-modulo-voz.md` | ver `git log` (commit de este paso) |
 | Formato de salida (`salida.py`) | **Sin empezar** | — | — |
 | Relevamiento de `extraccion.py` | **Sin empezar** | — | — |
 
@@ -56,13 +57,23 @@ Pasa: F0 medida 120,00 Hz contra 120 Hz pedidos. Los 9 comandos de KlattGrid pro
   - efecto de subpoblación exacto.
 - Todos pasan con la semilla fija. El peor desvío es 0,0125 (b + q de mujeres en f3) contra una tolerancia de 0,02.
 
+### Datos de Voz para la calibración de Tomás
+
+- **Archivo:** `informes/voz_para_calibracion.csv`, generado con `python scripts/exportar_para_calibracion.py`.
+- **Filas: 8.000.** Son las 500 personas de `calibracion` y las 500 de `prueba` de `cohorte_anima.csv`, por los 8 parámetros.
+- **Columnas, en este orden:** `individuo_id`, `particion`, `rasgo`, `y_real`, `mu_oraculo`, `sigma_oraculo`. Siguen la propuesta que Diego le mandó a Tomás el 26/10; si el contrato congelado usa otros nombres, se cambian en `COLUMNAS`, sin tocar la lógica.
+- **Fenotipos:** efectos reales de `poblacion.py` y semilla 20261019, la de la réplica 0. `y_real` coincide exactamente con el `y` de `generar_fenotipos`.
+- **Validación antes de escribir: OK.** Comprueba una fila por (`individuo_id`, `rasgo`), ids y particiones iguales a los de la cohorte, valores finitos y `sigma_oraculo` > 0. Un test confirma que pasa y otros seis, que rechaza un archivo con una fila duplicada, una partición cambiada, un individuo faltante, un valor no finito, un sigma en 0 o las columnas en otro orden.
+- **`mu_oraculo` y `sigma_oraculo` no son predicciones de ningún modelo.** Son la media y el desvío verdaderos de cada persona, conocidos por diseño: `mu_oraculo` = m + s · g y `sigma_oraculo` = s · √(1 − h²). Con ellos, (y_real − mu_oraculo) / sigma_oraculo es normal estándar (el test lo verifica: media y desvío a menos de 0,05 de 0 y 1). Una capa de calibración probada con estos datos parte de intervalos ya bien calibrados; las 8.000 filas sirven para probar la forma y el flujo, no para medir cuánto corrige.
+
 ## Resultado del pytest completo
 
-**168 tests: 168 pasan, 0 fallan, 0 salteados** (58 s, Python 3.12.4). `tests/test_setup.py` es un chequeo de entorno que se corre aparte, y también pasa.
+**178 tests: 178 pasan, 0 fallan, 0 salteados** (57 s, Python 3.12.4). `tests/test_setup.py` es un chequeo de entorno que se corre aparte, y también pasa.
 
 | Archivo | Tests | Qué cubre |
 |---|---|---|
 | `tests/test_fenotipo.py` | 79 | Etapa 2: h² por sexo, d, r, c y pendientes en los 8 parámetros, semillas, configuración neutra |
+| `tests/test_exportar_para_calibracion.py` | 10 | Datos para la calibración de Tomás: forma, coincidencia con los fenotipos, oráculo calibrado y rechazo de archivos mal armados |
 | `tests/test_generador.py` | 36 | VZ-01 a VZ-05 y VZ-07 sobre `genotipo.py` |
 | `tests/test_poblacion.py` | 30 | Valores del brief, fuentes, pendientes, configuración neutra |
 | `tests/test_parametros.py` | 15 | h² contra la tabla S6 |
@@ -111,6 +122,10 @@ Nuevos en la Etapa 2:
 - **Tests agregados:** efecto de subpoblación exacto (el brief no pide ninguno para a), error claro si un parámetro no tiene índice de semilla, e índices de semilla fijos y distintos.
 - **`fenotipo.py` expone `edad_centrada`, `tramo60` y `media_y_escala`.** Los usan los tests y los va a usar `lineas_base.py` en la Etapa 3, para que las dos definiciones no se separen.
 
+En los datos para la calibración de Tomás:
+
+- **Dos tests además de la validación que pide el brief:** que `y_real` sea exactamente el fenotipo de la réplica 0, y que el oráculo esté calibrado. El test importa el script con `importlib`, porque `scripts/` no está en el `pythonpath`.
+
 Otros, sin efecto sobre el código del prototipo:
 
 - **Etapa 0:** la variante con flutter, aspiración e inclinación espectral se midió en un archivo temporal; en `informes/` queda un solo WAV.
@@ -122,3 +137,5 @@ Otros, sin efecto sobre el código del prototipo:
 2. **El orden por ΔR² de VZ-13 refleja el efecto del sexo, no la h².** Con los efectos reales, f0_medio (h² 0,103) queda sexto y jitter (h² 0,05) segundo. Propuesta: informar además el ΔR² parcial. Ver `informes/propuestas-23-10-etapa2.md`, punto 1.
 3. **VZ-01 a VZ-05 y VZ-07 prueban `genotipo.py`, no el generador del prototipo.** Propuesta: pasarlos a `fenotipo.py`. Ver `informes/propuestas-23-10-etapa2.md`, punto 2.
 4. **Escala de `f0_variabilidad`.** Se confirma en el relevamiento de `extraccion.py`.
+
+Las preguntas 1 a 3 siguen sin respuesta en el brief del 26/10.
