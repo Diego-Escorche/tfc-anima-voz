@@ -99,18 +99,46 @@ def test_formato_largo(cohorte_grande, fenotipos):
                               cohorte_grande["individuo_id"].to_numpy())
 
 
+def r2_dentro_de_sexo(cohorte, fenotipos, p, sexo, g=None):
+    """R2 de (y - m) / s explicado por g, en las personas de un sexo.
+
+    g: el puntaje genetico a usar; por defecto, el de los fenotipos (VZ-05 pasa uno mezclado).
+    """
+    ef = efectos_de_prueba()[p.nombre]
+    m, s = media_y_escala(ef, cohorte["sexo"].to_numpy(), cohorte["edad"].to_numpy(),
+                          cohorte["subpoblacion"].to_numpy())
+    z = (columna(fenotipos, p.nombre, "y") - m) / s
+    g = columna(fenotipos, p.nombre, "g") if g is None else g
+    del_sexo = cohorte["sexo"].to_numpy() == sexo
+    return float(np.corrcoef(g[del_sexo], z[del_sexo])[0, 1] ** 2)
+
+
 @pytest.mark.parametrize("p", PARAMETROS, ids=lambda p: p.nombre)
 @pytest.mark.parametrize("sexo", [0, 1], ids=["mujeres", "hombres"])
-def test_h2_dentro_de_cada_sexo(cohorte_grande, fenotipos, p, sexo):
-    """El R2 de (y - m) / s explicado por g queda a menos de 0,01 de la h2."""
-    ef = efectos_de_prueba()[p.nombre]
-    m, s = media_y_escala(ef, cohorte_grande["sexo"].to_numpy(), cohorte_grande["edad"].to_numpy(),
-                          cohorte_grande["subpoblacion"].to_numpy())
-    z = (columna(fenotipos, p.nombre, "y") - m) / s
-    g = columna(fenotipos, p.nombre, "g")
-    del_sexo = cohorte_grande["sexo"].to_numpy() == sexo
-    r2 = np.corrcoef(g[del_sexo], z[del_sexo])[0, 1] ** 2
+def test_vz01_04_h2_dentro_de_cada_sexo(cohorte_grande, fenotipos, p, sexo):
+    """VZ-01 a VZ-04: el R2 de (y - m) / s explicado por g queda a menos de 0,01 de la h2."""
+    r2 = r2_dentro_de_sexo(cohorte_grande, fenotipos, p, sexo)
     assert abs(r2 - p.heredabilidad) < TOLERANCIA_H2
+
+
+@pytest.mark.parametrize("p", PARAMETROS, ids=lambda p: p.nombre)
+@pytest.mark.parametrize("sexo", [0, 1], ids=["mujeres", "hombres"])
+def test_vz05_permutacion_anula_la_senal(cohorte_grande, fenotipos, p, sexo):
+    """VZ-05: con g mezclado al azar entre personas, el R2 cae por debajo de 0,005."""
+    g_mezclado = np.random.default_rng(SEMILLA).permutation(columna(fenotipos, p.nombre, "g"))
+    assert r2_dentro_de_sexo(cohorte_grande, fenotipos, p, sexo, g=g_mezclado) < 0.005
+
+
+@pytest.mark.lento
+@pytest.mark.parametrize("replica", range(20))
+def test_vz07_estabilidad_entre_semillas(cohorte_grande, replica):
+    """VZ-07: VZ-01 a VZ-04 pasan en los 8 parametros y ambos sexos con las 20 semillas
+    del barrido, 20261019 + r con r de 0 a 19."""
+    fen = generar_fenotipos(cohorte_grande, PARAMETROS, efectos_de_prueba(), SEMILLA + replica)
+    for p in PARAMETROS:
+        for sexo in (0, 1):
+            r2 = r2_dentro_de_sexo(cohorte_grande, fen, p, sexo)
+            assert abs(r2 - p.heredabilidad) < TOLERANCIA_H2, (p.nombre, sexo)
 
 
 @pytest.mark.parametrize("p", PARAMETROS, ids=lambda p: p.nombre)

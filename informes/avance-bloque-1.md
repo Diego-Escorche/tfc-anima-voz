@@ -1,6 +1,6 @@
 # Avance del bloque 1 — módulo de Voz (23/10 al 2/11)
 
-**Última actualización:** 26/10/2026 · **Estado del bloque:** en curso. Preparación, Etapa 0, seguimiento, Etapas 1 y 2 y los datos para la calibración de Tomás, hechos. Faltan el formato de salida (`salida.py`) y el relevamiento de `extraccion.py`.
+**Última actualización:** 26/10/2026 (tarde) · **Estado del bloque:** en curso. Preparación, Etapa 0, seguimiento, Etapas 1 y 2, los datos para la calibración de Tomás y las respuestas del 26/10 (referencias y casos VZ sobre `fenotipo.py`), hechos. Faltan el formato de salida (`salida.py`) y el relevamiento de `extraccion.py`.
 
 Informe pedido por el "Brief para IA programadora — prototipo autónomo del módulo de Voz", para que Diego se lo pase a Claude. Se completa al cerrar cada paso del bloque.
 
@@ -14,6 +14,8 @@ Informe pedido por el "Brief para IA programadora — prototipo autónomo del m�
 | Etapa 1: cohorte y efectos poblacionales | **Hecho** (23/10), con los ajustes que pidió el manager | `src/tfc_voz/cohorte.py`, `src/tfc_voz/poblacion.py`, `tests/test_cohorte.py`, `tests/test_poblacion.py`, `seguimiento-modulo-voz.md` | `b3f8092`, `1791981` |
 | Etapa 2: fenotipos | **Hecho** (23/10) | `src/tfc_voz/fenotipo.py`, `tests/test_fenotipo.py`, `seguimiento-modulo-voz.md` | `76008fb` |
 | Datos de Voz para la calibración de Tomás | **Hecho** (26/10) | `scripts/exportar_para_calibracion.py`, `informes/voz_para_calibracion.csv`, `tests/test_exportar_para_calibracion.py`, `seguimiento-modulo-voz.md` | `333940a` |
+| Respuesta 1 del 26/10: referencias verificadas | **Hecho** (26/10) | `src/tfc_voz/poblacion.py`, `tests/test_poblacion.py`, `seguimiento-modulo-voz.md` | `9eeedc3` |
+| Respuesta 3 del 26/10: VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` | **Hecho** (26/10) | `tests/test_fenotipo.py`, `seguimiento-modulo-voz.md` | commit de este informe |
 | Formato de salida (`salida.py`) | **Sin empezar** | — | — |
 | Relevamiento de `extraccion.py` | **Sin empezar** | — | — |
 
@@ -66,16 +68,47 @@ Pasa: F0 medida 120,00 Hz contra 120 Hz pedidos. Los 9 comandos de KlattGrid pro
 - **Validación antes de escribir: OK.** Comprueba una fila por (`individuo_id`, `rasgo`), ids y particiones iguales a los de la cohorte, valores finitos y `sigma_oraculo` > 0. Un test confirma que pasa y otros seis, que rechaza un archivo con una fila duplicada, una partición cambiada, un individuo faltante, un valor no finito, un sigma en 0 o las columnas en otro orden.
 - **`mu_oraculo` y `sigma_oraculo` no son predicciones de ningún modelo.** Son la media y el desvío verdaderos de cada persona, conocidos por diseño: `mu_oraculo` = m + s · g y `sigma_oraculo` = s · √(1 − h²). Con ellos, (y_real − mu_oraculo) / sigma_oraculo es normal estándar (el test lo verifica: media y desvío a menos de 0,05 de 0 y 1). Una capa de calibración probada con estos datos parte de intervalos ya bien calibrados; las 8.000 filas sirven para probar la forma y el flujo, no para medir cuánto corrige.
 
+### Referencias de `poblacion.py` verificadas (respuesta 1 del 26/10)
+
+- La media y el desvío de referencia salen de la media y el DE de las mujeres en unidades físicas, tal como los informan las fuentes (Gisladóttir, tabla S2 `S2_Means`; Goy et al. 2013, tabla 3), convertidos a logaritmo por momentos lognormales: desvio_ref = √ln(1 + (DE / media)²) y media_ref = ln(media) − desvio_ref² / 2.
+- Tipo: **"derivado"** en los siete parámetros convertidos; **"dato"** en hnr, que ya está en dB. Cada fuente anota la fila, la media, el DE y la fórmula. Los valores físicos quedan en `REFERENCIA_FISICA`.
+- Un test recalcula las referencias desde la tabla del manager. Mayor diferencia: 0,00005 (tolerancia 0,0001); en jitter, 0,00026 (tolerancia 0,001, porque Goy redondea a dos decimales).
+
+### VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` (respuesta 3 del 26/10)
+
+Sobre el generador del prototipo, con 200.000 personas (100.000 por sexo). El criterio de cada caso es el mismo que tenía sobre `genotipo.py`, cuyos tests quedan como están.
+
+| Caso | Qué verifica | Criterio | Medido | Estado |
+|---|---|---|---|---|
+| VZ-01 a VZ-04 | La h² pedida se recupera: R² de (y − m) / s explicado por g, dentro de cada sexo | Error menor a 0,01 en los 8 parámetros y ambos sexos | Error máximo 0,0044 | Pasó |
+| VZ-05 | Control de permutación: g mezclado al azar entre personas | R² menor a 0,005 en los 8 parámetros y ambos sexos | R² máximo 0,00006 | Pasó |
+| VZ-07 | Estabilidad: VZ-01 a VZ-04 con las 20 semillas del barrido, 20261019 + r (r de 0 a 19) | Error menor a 0,01 en las 20 semillas, 8 parámetros y ambos sexos | Error máximo 0,0049 | Pasó |
+
+Detalle por parámetro (VZ-01 a VZ-05 con la semilla 20261019):
+
+| Parámetro | h² pedida | VZ-01 a VZ-04: R² medido (mujeres / hombres) | VZ-05: R² con g mezclado (mujeres / hombres) | VZ-07: mayor error en 20 semillas |
+|---|---|---|---|---|
+| f0_medio | 0,1027 | 0,1063 / 0,1012 | 0,00001 / 0,00001 | 0,0049 |
+| f0_variabilidad | 0,0410 | 0,0415 / 0,0419 | 0,00000 / 0,00006 | 0,0036 |
+| jitter | 0,0500 | 0,0502 / 0,0513 | 0,00001 / 0,00000 | 0,0030 |
+| hnr | 0,0500 | 0,0492 / 0,0506 | 0,00000 / 0,00000 | 0,0035 |
+| f1 | 0,0619 | 0,0621 / 0,0633 | 0,00000 / 0,00001 | 0,0029 |
+| f2 | 0,1353 | 0,1397 / 0,1348 | 0,00000 / 0,00001 | 0,0044 |
+| f3 | 0,0644 | 0,0626 / 0,0600 | 0,00001 / 0,00000 | 0,0044 |
+| vtl | 0,0606 | 0,0600 / 0,0589 | 0,00002 / 0,00000 | 0,0025 |
+
+VZ-07 tarda unos 3 s por semilla y está marcado como lento (`pytest -m "not lento"` lo saltea), igual que el VZ-07 sobre `genotipo.py`.
+
 ## Resultado del pytest completo
 
-**178 tests: 178 pasan, 0 fallan, 0 salteados** (57 s, Python 3.12.4). `tests/test_setup.py` es un chequeo de entorno que se corre aparte, y también pasa.
+**222 tests: 222 pasan, 0 fallan, 0 salteados** (128 s, Python 3.12.4; sin los lentos, `pytest -m "not lento"`, unos 30 s). `tests/test_setup.py` es un chequeo de entorno que se corre aparte, y también pasa.
 
 | Archivo | Tests | Qué cubre |
 |---|---|---|
-| `tests/test_fenotipo.py` | 79 | Etapa 2: h² por sexo, d, r, c y pendientes en los 8 parámetros, semillas, configuración neutra |
+| `tests/test_fenotipo.py` | 115 | Etapa 2 (h² por sexo, d, r, c y pendientes en los 8 parámetros, semillas, configuración neutra) y VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` |
+| `tests/test_poblacion.py` | 38 | Valores del brief, fuentes, referencias recalculadas desde las tablas, pendientes, configuración neutra |
+| `tests/test_generador.py` | 36 | VZ-01 a VZ-05 y VZ-07 sobre `genotipo.py` (se conservan; su retiro se decide en la Etapa 8) |
 | `tests/test_exportar_para_calibracion.py` | 10 | Datos para la calibración de Tomás: forma, coincidencia con los fenotipos, oráculo calibrado y rechazo de archivos mal armados |
-| `tests/test_generador.py` | 36 | VZ-01 a VZ-05 y VZ-07 sobre `genotipo.py` |
-| `tests/test_poblacion.py` | 30 | Valores del brief, fuentes, pendientes, configuración neutra |
 | `tests/test_parametros.py` | 15 | h² contra la tabla S6 |
 | `tests/test_cohorte.py` | 8 | VZ-06 y rechazo de archivos mal formados |
 
@@ -106,10 +139,13 @@ Los 144 valores están dentro de su tolerancia. El mayor desvío de la h² es 0,
 | 23/10 | Índice de `default_rng([semilla, indice])`. Si es la posición en la lista, reordenar cambia los valores, cosa que el brief prohíbe | Diego: índice fijo por nombre (f0_medio 0 … vtl 7); un parámetro nuevo recibe el siguiente |
 | 23/10 | Archivos `.md` que ya no hacían falta | Diego: borrarlos. Se borraron `informe-fase1.md` y el plan del brief del 20/10; se conserva `historico-vctk.md` |
 | 23/10 | Cómo medir "a edad fija" en la Etapa 2 (`informes/propuesta-tests-edad-fija.md`) | Manager: se adopta, con r y c estimados de los residuos sin el c verdadero, y un test propio para c. Implementado |
-| 23/10 | Tipos de fuente dudosos en `poblacion.py` | Manager: b_hombre = 0 y q_mujer de f0_medio quedan como "derivado", anotados como lectura de Gisladóttir. Implementado. Media y desvío de referencia: ver pregunta abierta 1 |
+| 23/10 | Tipos de fuente dudosos en `poblacion.py` | Manager: b_hombre = 0 y q_mujer de f0_medio quedan como "derivado", anotados como lectura de Gisladóttir. Implementado |
 | 23/10 | Firma de `salida.py` | Manager: las tres funciones reciben el DataFrame de `leer_cohorte` |
 | 23/10 | Escala de `f0_variabilidad` | Manager: si `extraccion.py` la da en Hz, la escala es su logaritmo. Se confirma en el relevamiento |
 | 23/10 | Desvíos de la Etapa 1 | Manager: los cuatro aprobados |
+| 26/10 | ¿La media y el desvío de referencia son "dato" o "derivado"? | Manager, verificado contra las tablas originales: "derivado" (conversión de unidades físicas a logaritmo por momentos lognormales), salvo hnr, "dato". Implementado, con un test que las recalcula |
+| 26/10 | El orden por ΔR² de VZ-13 refleja el efecto del sexo (`informes/propuestas-23-10-etapa2.md`, punto 1) | Manager: se informa también el ΔR² parcial contra `ancestria sexo edad`, con su IC95 %, y VZ-13 se ordena por el parcial. Se implementa en la Etapa 5. El contraste entre dominios lo decide el grupo |
+| 26/10 | VZ-01 a VZ-05 y VZ-07 prueban `genotipo.py` (mismo documento, punto 2) | Manager: pasan a `fenotipo.py`, antes de `salida.py`. Implementado; `genotipo.py` y sus tests se conservan |
 
 ## Desvíos respecto del brief
 
@@ -133,9 +169,7 @@ Otros, sin efecto sobre el código del prototipo:
 
 ## Preguntas abiertas
 
-1. **Tipo de fuente de la media y el desvío de referencia en `poblacion.py`.** El manager indicó que, si se pasaron de Hz a logaritmo, son "derivado". Desde el repo no se puede verificar: los valores del brief vienen en logaritmo (por ejemplo, ln 5,2829 / 0,1195 en f0_medio), pero las tablas S2 de Gisladóttir y 2 y 3 de Goy no están en el repo. Siguen como "dato" hasta que alguien con esas tablas confirme si informan el logaritmo o los valores en Hz, %, dB o cm.
-2. **El orden por ΔR² de VZ-13 refleja el efecto del sexo, no la h².** Con los efectos reales, f0_medio (h² 0,103) queda sexto y jitter (h² 0,05) segundo. Propuesta: informar además el ΔR² parcial. Ver `informes/propuestas-23-10-etapa2.md`, punto 1.
-3. **VZ-01 a VZ-05 y VZ-07 prueban `genotipo.py`, no el generador del prototipo.** Propuesta: pasarlos a `fenotipo.py`. Ver `informes/propuestas-23-10-etapa2.md`, punto 2.
-4. **Escala de `f0_variabilidad`.** Se confirma en el relevamiento de `extraccion.py`.
+Las tres preguntas del 23/10 (tipo de fuente de las referencias, ΔR² parcial y casos VZ sobre `fenotipo.py`) quedaron respondidas el 26/10: ver "Decisiones consultadas".
 
-Las preguntas 1 a 3 siguen sin respuesta en el brief del 26/10.
+1. **Escala de `f0_variabilidad`.** Se confirma en el relevamiento de `extraccion.py`.
+2. **Unidad del jitter entre la referencia y el medidor (observación para la Etapa 7).** La referencia de `poblacion.py` está en **porcentaje** (Goy: 0,37 %), así que `muestrear` va a devolver el jitter en %. `extraccion.py`, en cambio, lo devuelve como **fracción** (0,0037 para 0,37 %). Al comparar pedido con medido en VZ-08, y al armar el control de jitter de la síntesis (desvío relativo = jitter / 1,128), hay que pasar de % a fracción. No requiere decisión ahora; se deja anotado para no perderlo.
