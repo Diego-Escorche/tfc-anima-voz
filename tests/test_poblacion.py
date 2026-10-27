@@ -2,6 +2,8 @@
 Tests de poblacion.py: valores del brief, fuentes, pendientes y configuracion neutra.
 """
 
+import math
+
 import pytest
 
 from tfc_voz.parametros import PARAMETROS
@@ -21,6 +23,41 @@ BRIEF = {
     "jitter": (0.26, 0.54, 0.07, 0.06, 0, 0, -1.1825, 0.6135, "log"),
     "hnr": (-0.77, 0.87, 0, -0.06, 0, 0, 25.3, 3.1, "dB"),
 }
+
+
+# Media y DE de las mujeres en unidades fisicas, verificadas el 26/10 contra las
+# tablas originales (Gisladottir S2_Means; Goy et al. 2013, tabla 3).
+# nombre: (media, DE, tipo de la fuente de media_ref y desvio_ref)
+REFERENCIAS_FISICAS = {
+    "f0_medio": (198.3467, 23.79237, "derivado"),
+    "f0_variabilidad": (9.801441, 6.397369, "derivado"),
+    "f1": (542.6445, 48.37267, "derivado"),
+    "f2": (1559.675, 89.84026, "derivado"),
+    "f3": (2948.821, 141.7478, "derivado"),
+    "vtl": (14.87063, 0.614681, "derivado"),
+    "jitter": (0.37, 0.25, "derivado"),
+    "hnr": (25.3, 3.1, "dato"),
+}
+# Goy redondea el jitter a dos decimales: 0,37 (0,25) %.
+TOLERANCIA_REFERENCIA = {"jitter": 0.001}
+
+
+@pytest.mark.parametrize("nombre", list(REFERENCIAS_FISICAS))
+def test_referencias_recalculadas_desde_la_fuente(nombre):
+    """media_ref y desvio_ref salen de la media y el DE fisicos por momentos lognormales."""
+    media, de, tipo = REFERENCIAS_FISICAS[nombre]
+    ef = EFECTOS[nombre]
+    if ef.escala == "dB":
+        esperado_media, esperado_desvio = media, de
+    else:
+        esperado_desvio = math.sqrt(math.log(1 + (de / media) ** 2))
+        esperado_media = math.log(media) - esperado_desvio ** 2 / 2
+    tolerancia = TOLERANCIA_REFERENCIA.get(nombre, 0.0001)
+    assert abs(ef.media_ref - esperado_media) < tolerancia
+    assert abs(ef.desvio_ref - esperado_desvio) < tolerancia
+    for campo in ("media_ref", "desvio_ref"):
+        assert tipo_de_fuente(ef.fuente[campo]) == tipo
+        assert f"media {media} " in ef.fuente[campo] and f"DE {de} " in ef.fuente[campo]
 
 
 def test_hay_efectos_para_los_8_parametros():

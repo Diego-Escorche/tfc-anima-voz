@@ -28,7 +28,7 @@
 
 ## Fase 3 — Modelo heterocedástico (3 nov – 30 nov)
 - [ ] Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal) y `lineas_base.py` (las dos líneas base y el modelo completo)
-- [ ] Etapa 5: `metricas.py` — cobertura, ΔR², CRPS y bootstrap pareado (genérico)
+- [ ] Etapa 5: `metricas.py` — cobertura, ΔR², CRPS y bootstrap pareado (genérico); VZ-11 y VZ-13 con ΔR² total y parcial, VZ-13 ordenado por el parcial (decisión del 26/10)
 - [ ] Modelo terminado y documentado para que Tomás lo adapte (semana del 24-30 nov)
 - [ ] Redacción adelantada: metodología y límites (el diseño no depende de resultados)
 
@@ -93,6 +93,10 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **`salida.py`:** las tres funciones reciben el DataFrame de `leer_cohorte` y toman de ahí los ids de prueba.
   - **Escala de `f0_variabilidad`:** si `extraccion.py` la da en Hz, la escala del módulo es el logaritmo de ese valor (se confirma en el relevamiento).
   - **Desvíos aprobados:** `n` en `generar_cohorte`, `pyproject.toml`, `.gitattributes` y `.gitignore`, y el criterio de tipos de fuente.
+- **26/10 — Respuestas al avance del 26/10** (brief del prototipo, "Respuestas al avance del 26/10"):
+  - **Media y desvío de referencia:** verificados contra las tablas originales (Gisladóttir S2_Means; Goy et al. 2013, tabla 3). Las fuentes informan en unidades físicas; los valores del brief son su conversión a logaritmo por momentos lognormales. Son "derivado", salvo hnr ("dato", ya en dB). Cada fuente anota fila, media, DE y fórmula; un test las recalcula.
+  - **ΔR² parcial:** VZ-11 y VZ-13 informan, contra `ancestria sexo edad`, el ΔR² total y el parcial, (R² completo − R² base) / (1 − R² base), cada uno con su IC95 % por bootstrap pareado con los mismos remuestreos. **VZ-13 se ordena por el parcial.** Contra `solo intercepto`, sólo el total. Se implementa en la Etapa 5. El contraste entre dominios (`anima_spine/compare.py`) lo decide el grupo; no se toca el paquete.
+  - **Casos VZ sobre `fenotipo.py`:** VZ-01 a VZ-04 pasan a ser el test de h² dentro de cada sexo de la Etapa 2, y se agregan VZ-05 (permutación) y VZ-07 (20 semillas, 20261019 + r) sobre `fenotipo.py`, con los mismos criterios. `genotipo.py` y sus tests quedan; si se retiran, se decide en la Etapa 8.
 
 ## Decisiones pendientes del grupo (bloquean)
 

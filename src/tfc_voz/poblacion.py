@@ -24,7 +24,10 @@ Cada valor lleva su fuente, que empieza con uno de cuatro tipos:
 media_ref y desvio_ref son la media y el desvio del logaritmo (o de los dB)
 en mujeres. Sirven para volver a unidades fisicas: valor = exp(media_ref +
 desvio_ref * y), o media_ref + desvio_ref * y en hnr. La conversion no se
-implementa todavia.
+implementa todavia. Las fuentes informan la media y el DE en unidades fisicas
+(REFERENCIA_FISICA); se pasan a logaritmo por momentos lognormales:
+desvio_ref = sqrt(ln(1 + (DE / media)^2)) y media_ref = ln(media) - desvio_ref^2 / 2.
+hnr ya esta en dB y no se convierte (verificado contra las tablas el 26/10).
 """
 
 from dataclasses import dataclass
@@ -79,7 +82,33 @@ _EDAD_GOY = ("derivado: Goy et al. 2013, Tablas 2 y 3, diferencia entre jovenes 
              "y mayores (~72 anios); no significativa con Bonferroni, se usa la estimacion puntual")
 
 
-def _fuentes_gisladottir(fila_s2, edad_b_mujer, edad_b_hombre, quiebre=None):
+# Media y DE de las mujeres en unidades fisicas, tal como las informa la fuente.
+# nombre: (fila de la fuente, media, DE, unidad)
+REFERENCIA_FISICA = {
+    "f0_medio": ("Gisladottir et al. 2023, tabla S2 (S2_Means), Vowels.MedianF0", 198.3467, 23.79237, "Hz"),
+    "f0_variabilidad": ("Gisladottir et al. 2023, tabla S2 (S2_Means), Vowels.StdF0", 9.801441, 6.397369, "Hz"),
+    "f1": ("Gisladottir et al. 2023, tabla S2 (S2_Means), Vowels.MedianF1", 542.6445, 48.37267, "Hz"),
+    "f2": ("Gisladottir et al. 2023, tabla S2 (S2_Means), Vowels.MedianF2", 1559.675, 89.84026, "Hz"),
+    "f3": ("Gisladottir et al. 2023, tabla S2 (S2_Means), Vowels.MedianF3", 2948.821, 141.7478, "Hz"),
+    "vtl": ("Gisladottir et al. 2023, tabla S2 (S2_Means), VTL.F1to4", 14.87063, 0.614681, "cm"),
+    "jitter": ("Goy et al. 2013, tabla 3, grupo joven", 0.37, 0.25, "%"),
+    "hnr": ("Goy et al. 2013, tabla 3, grupo joven", 25.3, 3.1, "dB"),
+}
+
+_MOMENTOS = ("momentos lognormales: desvio_ref = sqrt(ln(1 + (DE/media)^2)), "
+             "media_ref = ln(media) - desvio_ref^2 / 2")
+
+
+def _fuente_referencia(nombre):
+    """Fuente de media_ref y desvio_ref: fila, media y DE fisicos, y la conversion."""
+    fila, media, de, unidad = REFERENCIA_FISICA[nombre]
+    valores = f"{fila}, mujeres: media {media} {unidad}, DE {de} {unidad}"
+    if unidad == "dB":
+        return f"dato: {valores}; sin conversion (hnr ya esta en dB)"
+    return f"derivado: {valores}; {_MOMENTOS}"
+
+
+def _fuentes_gisladottir(nombre, fila_s2, edad_b_mujer, edad_b_hombre, quiebre=None):
     quiebre = quiebre or {"q_mujer": _SIN_QUIEBRE, "q_hombre": _SIN_QUIEBRE}
     return {
         "d": f"dato: Gisladottir et al. 2023, tabla S2, {fila_s2}",
@@ -89,12 +118,12 @@ def _fuentes_gisladottir(fila_s2, edad_b_mujer, edad_b_hombre, quiebre=None):
         **quiebre,
         "c": _C_SIN_DATO,
         "a": _A_SIN_DATO,
-        "media_ref": f"dato: Gisladottir et al. 2023, tabla S2, {fila_s2}, mujeres",
-        "desvio_ref": f"dato: Gisladottir et al. 2023, tabla S2, {fila_s2}, mujeres",
+        "media_ref": _fuente_referencia(nombre),
+        "desvio_ref": _fuente_referencia(nombre),
     }
 
 
-def _fuentes_goy():
+def _fuentes_goy(nombre):
     return {
         "d": "dato: Goy et al. 2013, Tablas 2 y 3, grupo joven",
         "r": "dato: Goy et al. 2013, Tablas 2 y 3, grupo joven",
@@ -104,8 +133,8 @@ def _fuentes_goy():
         "q_hombre": _SIN_QUIEBRE,
         "c": _C_GOY,
         "a": _A_SIN_DATO,
-        "media_ref": "dato: Goy et al. 2013, Tablas 2 y 3, grupo joven, mujeres",
-        "desvio_ref": "dato: Goy et al. 2013, Tablas 2 y 3, grupo joven, mujeres",
+        "media_ref": _fuente_referencia(nombre),
+        "desvio_ref": _fuente_referencia(nombre),
     }
 
 
@@ -116,7 +145,7 @@ EFECTOS = {
         "f0_medio", d=-4.03, r=1.41, b_mujer=-0.32, b_hombre=0.0, q_mujer=0.32, q_hombre=0.40,
         c=0.0, a=_sin_subpoblacion(), media_ref=5.2829, desvio_ref=0.1195, escala="log",
         fuente=_fuentes_gisladottir(
-            "Vowels.MedianF0",
+            "f0_medio", "Vowels.MedianF0",
             edad_b_mujer="dato: texto de Gisladottir et al. 2023, mujeres -0,8 Hz por anio hasta los 60",
             edad_b_hombre="derivado: lectura de Gisladottir et al. 2023: el cambio de F0 en "
                           "hombres empieza a los 60, asi que antes de los 60 la pendiente es 0",
@@ -130,34 +159,34 @@ EFECTOS = {
         "f0_variabilidad", d=-0.75, r=1.02, b_mujer=0.0, b_hombre=0.0, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=2.1051, desvio_ref=0.5957, escala="log",
         fuente=_fuentes_gisladottir(
-            "Vowels.StdF0",
+            "f0_variabilidad", "Vowels.StdF0",
             edad_b_mujer="0 declarado: sin dato del efecto de la edad",
             edad_b_hombre="0 declarado: sin dato del efecto de la edad")),
     "jitter": EfectosPoblacionales(
         "jitter", d=0.26, r=0.54, b_mujer=0.07, b_hombre=0.06, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=-1.1825, desvio_ref=0.6135, escala="log",
-        fuente=_fuentes_goy()),
+        fuente=_fuentes_goy("jitter")),
     "hnr": EfectosPoblacionales(
         "hnr", d=-0.77, r=0.87, b_mujer=0.0, b_hombre=-0.06, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=25.3, desvio_ref=3.1, escala="dB",
-        fuente=_fuentes_goy()),
+        fuente=_fuentes_goy("hnr")),
     "f1": EfectosPoblacionales(
         "f1", d=-1.91, r=0.94, b_mujer=-0.10, b_hombre=0.02, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=6.2925, desvio_ref=0.0890, escala="log",
-        fuente=_fuentes_gisladottir("Vowels.MedianF1", _S4_VOCALES, _S4_VOCALES)),
+        fuente=_fuentes_gisladottir("f1", "Vowels.MedianF1", _S4_VOCALES, _S4_VOCALES)),
     "f2": EfectosPoblacionales(
         "f2", d=-2.53, r=1.02, b_mujer=-0.14, b_hombre=-0.03, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=7.3506, desvio_ref=0.0576, escala="log",
-        fuente=_fuentes_gisladottir("Vowels.MedianF2", _S4_VOCALES, _S4_VOCALES)),
+        fuente=_fuentes_gisladottir("f2", "Vowels.MedianF2", _S4_VOCALES, _S4_VOCALES)),
     "f3": EfectosPoblacionales(
         "f3", d=-2.45, r=0.99, b_mujer=0.02, b_hombre=-0.03, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=7.9880, desvio_ref=0.0480, escala="log",
-        fuente=_fuentes_gisladottir("Vowels.MedianF3", _S4_VOCALES, _S4_VOCALES)),
+        fuente=_fuentes_gisladottir("f3", "Vowels.MedianF3", _S4_VOCALES, _S4_VOCALES)),
     "vtl": EfectosPoblacionales(
         "vtl", d=3.38, r=1.06, b_mujer=0.04, b_hombre=-0.02, q_mujer=0.0, q_hombre=0.0,
         c=0.0, a=_sin_subpoblacion(), media_ref=2.6985, desvio_ref=0.0413, escala="log",
         fuente=_fuentes_gisladottir(
-            "VTL.F1to4",
+            "vtl", "VTL.F1to4",
             "derivado: Gisladottir et al. 2023, tabla S4, pendientes de F1 a F4",
             "derivado: Gisladottir et al. 2023, tabla S4, pendientes de F1 a F4")),
 }
