@@ -1,7 +1,7 @@
 # Seguimiento — módulo de Voz
 
-**Última actualización:** 26 oct 2026
-**Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 23/10: Fase 1 completa (incluida la Etapa 0, que pasa) y la columna vertebral `anima_spine` 1.1 copiada y verificada.
+**Última actualización:** 29 oct 2026
+**Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 29/10: Fase 1 completa (incluida la Etapa 0, que pasa) y Fase 2 (bloque 1 del brief) completa, a la espera de que Diego confirme su cierre. El bloque 2 (3 al 30 de noviembre) cubre la Fase 3 y la conexión con la capa de calibración de Tomás.
 
 **Riesgo principal:** que el código no arranque. Venía sin avance desde fines de septiembre; la semana 1 es a propósito el hito más barato.
 
@@ -24,28 +24,33 @@
 - [x] Etapa 2: `fenotipo.py`, modelo generativo con heredabilidad residual; h², d, r, c y pendientes de edad recuperados en los 8 parámetros con 200.000 personas (23/10)
 - [x] Datos de Voz para la capa de calibración de Tomás: `scripts/exportar_para_calibracion.py` escribe `informes/voz_para_calibracion.csv` (8.000 filas de calibración y prueba, media y desvío oráculo; validación OK). Columnas según la propuesta de Diego a Tomás del 26/10 (26/10)
 - [x] VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` (decisión del 26/10): VZ-01 a VZ-04 son el test de h² dentro de cada sexo de la Etapa 2; VZ-05 (permutación) y VZ-07 (20 semillas del barrido) agregados. Todos en verde (26/10)
-- [ ] Formato de salida (adelantado de la Etapa 6): `salida.py` valida y escribe tres archivos — predicciones, intervalos en seis niveles y barrido de 20 réplicas
+- [x] Formato de salida (adelantado de la Etapa 6): `salida.py` valida con `anima_spine` y escribe tres archivos — predicciones, intervalos en seis niveles y barrido de 20 réplicas; rechaza fila duplicada, nivel faltante y 19 réplicas (29/10)
 - [ ] Relevamiento de `extraccion.py` (sin cambiarlo) e informe de cierre del bloque, `informes/avance-bloque-1.md`
 
 ## Fase 3 — Modelo heterocedástico (3 nov – 30 nov)
-- [ ] Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal) y `lineas_base.py` (las dos líneas base y el modelo completo)
-- [ ] Etapa 5: `metricas.py` — cobertura, ΔR², CRPS y bootstrap pareado (genérico); VZ-11 y VZ-13 con ΔR² total y parcial, VZ-13 ordenado por el parcial (decisión del 26/10)
+Es el bloque 2 del brief del prototipo. Informe semanal en `informes/avance-bloque-2.md`.
+- [ ] Semana del 3/11 — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
+- [ ] Semana del 10/11 — `lineas_base.py`: las dos líneas base y el modelo completo, con los "Ajustes del 29/10" (definiciones compartidas con `fenotipo.py`, test de la línea base 2, test con g permutado)
+- [ ] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`
+- [ ] Semana del 17/11 — Etapa 5: `metricas.py`, sólo funciones y tests (cobertura, ΔR² total y parcial, CRPS, bootstrap pareado); VZ-11 a VZ-13 se corren en diciembre
+- [ ] Semana del 17/11 — control de integración: ΔR² parcial promedio de 20 réplicas a menos de 0,025 de la h² de cada parámetro
+- [ ] Semana del 24/11 — adaptador de la Etapa 4 con datos oráculo, sólo si Diego pasó el contrato congelado y la v1 de la capa de Tomás está disponible; si no, pasa a diciembre
 - [ ] Modelo terminado y documentado para que Tomás lo adapte (semana del 24-30 nov)
 - [ ] Redacción adelantada: metodología y límites (el diseño no depende de resultados)
 
 ## Fase 4 — Calibración y primeros ΔR² (1 dic – 8 dic)
-- [ ] Etapa 4: calibración provisoria, split conformal normalizado (reemplazable por la capa de Tomás)
+- [ ] Etapa 4: `calibracion.py` como adaptador a la capa común de Tomás (`anima_spine/calibracion.py`, contrato v2), sin lógica de calibración propia; con la salida del modelo como entrada
 - [ ] VZ-10: cobertura promedio de 20 réplicas dentro de ±5 puntos del nivel nominal en los seis niveles, del 50 % al 95 %
 - [ ] Primeros ΔR² de Voz contra las dos líneas base, con IC95 % (VZ-11, VZ-12) — 8 dic
 
 ## Fase 5 — Cierre de resultados de Voz (9 dic – 21 dic)
-- [ ] VZ-13: tabla de los 8 parámetros ordenados por ΔR²
+- [ ] VZ-13: tabla de los 8 parámetros ordenados por ΔR² parcial, con el total y la h² inyectada al lado
 - [ ] Etapa 6: `prototipo.py` (un comando corre todo el circuito) y `reporte_voz.md`
 - [ ] `predicciones_voz.csv`, `intervalos_voz.csv` y `barrido_voz.csv` definitivos entregados al análisis integral — 21 dic
 
 ## Fase 6 — Síntesis de audio y vista vocal (9 dic – 21 dic)
 - [ ] Etapa 7: `muestreo.py` (`muestrear`) y `sintesis.py` (`sintetizar`), las funciones que llama la vista vocal del prototipo web
-- [ ] Decisiones sobre la síntesis del 23/10 implementadas (ver "Decisiones tomadas")
+- [ ] Decisiones sobre la síntesis del 23/10 y del 29/10 implementadas (ver "Decisiones tomadas")
 - [ ] VZ-08: ida y vuelta, F0 medida a menos de 5 Hz de la pedida en 20 realizaciones de ambos sexos
 
 Corre en paralelo con la Fase 5 y tiene menos prioridad: si el tiempo aprieta, se termina después de VZ-10 a VZ-13 (ventana confirmada por Diego el 23/10).
@@ -71,7 +76,7 @@ Del 22 dic al 4 ene: fiestas, nada comprometido.
 |---|---|---|---|
 | `cohorte_anima.csv` congelada | Grupo | 27 oct | **Existe:** v1.1 del paquete `anima_spine`, congelada con huella SHA-256 y copiada al repo el 23/10 |
 | Línea base heterocedástica (OE2) | Grupo | 24-30 nov | El prototipo arma las dos líneas base en `lineas_base.py`; informar contra una sola si falta |
-| Capa de calibración conformal (OE4) | Tomás | 1-7 dic | El prototipo usa una provisoria (`calibracion.py`, reemplazable) |
+| Capa de calibración conformal (OE4) | Tomás | Contrato v2 congelado ~31/10; v1 de la capa en noviembre | **Voz usa la capa común de Tomás** (decisión del 27/10): `calibracion.py` es un adaptador sin lógica propia y se conecta con datos oráculo en la segunda quincena de noviembre. Plan B, sólo con el visto bueno de Diego: si a fin de noviembre la capa no está, calibración provisoria (split conformal normalizado, ~6 h) detrás de la misma firma del adaptador |
 | ΔR² de Rostro y Temperamento sobre la misma cohorte | Audrey y Tomás | 26 ene | El documento individual se sostiene con el ΔR² de Voz y su IC |
 
 La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, devuelve el intervalo): Tomás la entrega a mediados de noviembre y el modelo de Voz recién está el 30.
@@ -98,6 +103,10 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **Media y desvío de referencia:** verificados contra las tablas originales (Gisladóttir S2_Means; Goy et al. 2013, tabla 3). Las fuentes informan en unidades físicas; los valores del brief son su conversión a logaritmo por momentos lognormales. Son "derivado", salvo hnr ("dato", ya en dB). Cada fuente anota fila, media, DE y fórmula; un test las recalcula.
   - **ΔR² parcial:** VZ-11 y VZ-13 informan, contra `ancestria sexo edad`, el ΔR² total y el parcial, (R² completo − R² base) / (1 − R² base), cada uno con su IC95 % por bootstrap pareado con los mismos remuestreos. **VZ-13 se ordena por el parcial.** Contra `solo intercepto`, sólo el total. Se implementa en la Etapa 5. El contraste entre dominios (`anima_spine/compare.py`) lo decide el grupo; no se toca el paquete.
   - **Casos VZ sobre `fenotipo.py`:** VZ-01 a VZ-04 pasan a ser el test de h² dentro de cada sexo de la Etapa 2, y se agregan VZ-05 (permutación) y VZ-07 (20 semillas, 20261019 + r) sobre `fenotipo.py`, con los mismos criterios. `genotipo.py` y sus tests quedan; si se retiran, se decide en la Etapa 8.
+- **27/10 — Calibración con la capa común de Tomás** (brief del prototipo, Etapa 4): Voz no escribe una calibración propia. Usa `anima_spine/calibracion.py` (contrato v2 del 27/10, que se congela alrededor del 31/10). `calibracion.py` del módulo es un adaptador sin lógica de calibración; el intervalo al 90 % de `predicciones_voz.csv` sale de la salida de la capa en nivel 0,90. Lo que la capa no resuelva se anota como pedido para Tomás. Plan B (calibración provisoria) sólo si la capa no está a fin de noviembre y con el visto bueno de Diego.
+- **29/10 — Ajustes de la Etapa 3** (brief del prototipo, "Ajustes del 29/10"): `lineas_base.py` usa `edad_centrada` y `tramo60` de `fenotipo.py`; se mantiene el término g · edad_c; `ajustar` levanta un error si el optimizador no converge; tests de la línea base 2 y con g permutado; `tabla_predictiva` (16.000 filas, columnas del contrato v2, oráculo reusado de `exportar_para_calibracion.py`); `correr_replica(cohorte, r)`; control de integración del ΔR² parcial sobre 20 réplicas (tolerancia 0,025).
+- **29/10 — Unidad del jitter en la síntesis** (decisión 4 de la Etapa 7, sobre la observación del 26/10): `muestrear` devuelve el jitter en %; se convierte a fracción en un solo lugar, al entrar a `sintetizar`; la tabla de VZ-08 compara en la misma unidad y la declara; un test verifica que 0,37 % entra como 0,0037.
+- **29/10 — Plan del bloque 2** (3 al 30 de noviembre): una semana por paso (modelo; líneas base; tabla predictiva, réplicas, métricas y control de integración; adaptador con datos oráculo). Si una semana se atrasa no se comprime la siguiente: se avisa en `informes/avance-bloque-2.md` y Diego decide.
 
 ## Decisiones pendientes del grupo (bloquean)
 
@@ -123,6 +132,7 @@ Salieron de la Etapa 0 (23/10; tablas en `informes/etapa0-factibilidad-sintesis.
 - **El flutter mueve a la vez el jitter y la variabilidad de F0.** → Decisión 3: no usar flutter; un punto de pitch por período, más corrección iterativa.
 - **El ruido de aspiración empeora la medición de formantes y el HNR está acoplado al jitter.** → Decisiones 1 y 3: formantes medidos con 4 y HNR ajustado por corrección iterativa.
 - **La variabilidad de F0 necesita un contorno.** → Brief, Etapa 7: suma de 3 senoidales lentas (0,5 a 3 Hz), ajustada por corrección iterativa.
+- **El jitter está en % en la referencia y en fracción en el medidor** (observación del 26/10). → Decisión 4 (29/10): conversión en un solo lugar, al entrar a `sintetizar`.
 
 ## Correcciones del documento individual (.docx)
 
@@ -134,6 +144,13 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 - [x] Sección 1.2: falta un punto o un guión después de "en 3D"
 
 ---
+
+## Reemplazado el 29/10
+
+- **Fase 3:** "Etapa 3: `modelo.py` y `lineas_base.py`" y "Etapa 5: `metricas.py` …" en dos renglones. Pasaron a un renglón por semana del bloque 2.
+- **Fase 4:** "Etapa 4: calibración provisoria, split conformal normalizado (reemplazable por la capa de Tomás)". Desde el 27/10, `calibracion.py` es un adaptador a la capa común; la provisoria quedó como plan B.
+- **Fase 5:** "VZ-13: tabla de los 8 parámetros ordenados por ΔR²". Desde el 26/10 se ordena por el ΔR² parcial.
+- **Dependencias:** la fila de la capa de calibración decía "El prototipo usa una provisoria (`calibracion.py`, reemplazable)", con fecha 1-7 dic.
 
 ## Reemplazado el 23/10
 
