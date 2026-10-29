@@ -25,7 +25,7 @@
 - [x] Datos de Voz para la capa de calibración de Tomás: `scripts/exportar_para_calibracion.py` escribe `informes/voz_para_calibracion.csv` (8.000 filas de calibración y prueba, media y desvío oráculo; validación OK). Columnas según la propuesta de Diego a Tomás del 26/10 (26/10)
 - [x] VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` (decisión del 26/10): VZ-01 a VZ-04 son el test de h² dentro de cada sexo de la Etapa 2; VZ-05 (permutación) y VZ-07 (20 semillas del barrido) agregados. Todos en verde (26/10)
 - [x] Formato de salida (adelantado de la Etapa 6): `salida.py` valida con `anima_spine` y escribe tres archivos — predicciones, intervalos en seis niveles y barrido de 20 réplicas; rechaza fila duplicada, nivel faltante y 19 réplicas (29/10)
-- [ ] Relevamiento de `extraccion.py` (sin cambiarlo) e informe de cierre del bloque, `informes/avance-bloque-1.md`
+- [x] Relevamiento de `extraccion.py` (sin cambiarlo) e informe de cierre del bloque, `informes/avance-bloque-1.md`. Diferencias con Gisladóttir: f0_medio con promedio y no mediana, VTL por tubo sobre F1 a F3 (29/10)
 
 ## Fase 3 — Modelo heterocedástico (3 nov – 30 nov)
 Es el bloque 2 del brief del prototipo. Informe semanal en `informes/avance-bloque-2.md`.

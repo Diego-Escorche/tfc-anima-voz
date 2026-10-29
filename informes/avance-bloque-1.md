@@ -17,7 +17,7 @@ Informe pedido por el "Brief para IA programadora — prototipo autónomo del m�
 | Respuesta 1 del 26/10: referencias verificadas | **Hecho** (26/10) | `src/tfc_voz/poblacion.py`, `tests/test_poblacion.py`, `seguimiento-modulo-voz.md` | `9eeedc3` |
 | Respuesta 3 del 26/10: VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` | **Hecho** (26/10) | `tests/test_fenotipo.py`, `seguimiento-modulo-voz.md` | `63b15c4` |
 | Formato de salida (`salida.py`) | **Hecho** (29/10) | `src/tfc_voz/salida.py`, `tests/test_salida.py`, `seguimiento-modulo-voz.md` | `f91ba46` |
-| Relevamiento de `extraccion.py` | **Hecho** (29/10), sin cambiar el archivo | `informes/avance-bloque-1.md` | commit de este informe |
+| Relevamiento de `extraccion.py` | **Hecho** (29/10), sin cambiar el archivo | `informes/avance-bloque-1.md` | `7bedeaa` |
 
 Antes del bloque se commiteó por separado el trabajo del brief del 20/10, que no estaba commiteado (`a96b1f9`). Las propuestas de diseño están en `0543223` (edad fija) y en el commit de este informe (`informes/propuestas-23-10-etapa2.md`).
 
