@@ -1,6 +1,6 @@
 # Avance del bloque 1 — módulo de Voz (23/10 al 2/11)
 
-**Última actualización:** 26/10/2026 (tarde) · **Estado del bloque:** en curso. Preparación, Etapa 0, seguimiento, Etapas 1 y 2, los datos para la calibración de Tomás y las respuestas del 26/10 (referencias y casos VZ sobre `fenotipo.py`), hechos. Faltan el formato de salida (`salida.py`) y el relevamiento de `extraccion.py`.
+**Última actualización:** 29/10/2026 · **Estado del bloque: completo, a la espera de que Diego confirme el cierre.** Todos los pasos del bloque están hechos. El bloque 2 (3 al 30 de noviembre) no empieza sin esa confirmación.
 
 Informe pedido por el "Brief para IA programadora — prototipo autónomo del módulo de Voz", para que Diego se lo pase a Claude. Se completa al cerrar cada paso del bloque.
 
@@ -16,8 +16,8 @@ Informe pedido por el "Brief para IA programadora — prototipo autónomo del m�
 | Datos de Voz para la calibración de Tomás | **Hecho** (26/10) | `scripts/exportar_para_calibracion.py`, `informes/voz_para_calibracion.csv`, `tests/test_exportar_para_calibracion.py`, `seguimiento-modulo-voz.md` | `333940a` |
 | Respuesta 1 del 26/10: referencias verificadas | **Hecho** (26/10) | `src/tfc_voz/poblacion.py`, `tests/test_poblacion.py`, `seguimiento-modulo-voz.md` | `9eeedc3` |
 | Respuesta 3 del 26/10: VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` | **Hecho** (26/10) | `tests/test_fenotipo.py`, `seguimiento-modulo-voz.md` | `63b15c4` |
-| Formato de salida (`salida.py`) | **Sin empezar** | — | — |
-| Relevamiento de `extraccion.py` | **Sin empezar** | — | — |
+| Formato de salida (`salida.py`) | **Hecho** (29/10) | `src/tfc_voz/salida.py`, `tests/test_salida.py`, `seguimiento-modulo-voz.md` | `f91ba46` |
+| Relevamiento de `extraccion.py` | **Hecho** (29/10), sin cambiar el archivo | `informes/avance-bloque-1.md` | commit de este informe |
 
 Antes del bloque se commiteó por separado el trabajo del brief del 20/10, que no estaba commiteado (`a96b1f9`). Las propuestas de diseño están en `0543223` (edad fija) y en el commit de este informe (`informes/propuestas-23-10-etapa2.md`).
 
@@ -99,15 +99,47 @@ Detalle por parámetro (VZ-01 a VZ-05 con la semilla 20261019):
 
 VZ-07 tarda unos 3 s por semilla y está marcado como lento (`pytest -m "not lento"` lo saltea), igual que el VZ-07 sobre `genotipo.py`.
 
+### Formato de salida (`salida.py`)
+
+- `escribir_predicciones(predicciones, cohorte, directorio, rasgos=None)`, `escribir_intervalos(intervalos, predicciones, cohorte, directorio)` y `escribir_barrido(barrido, intervalos, predicciones, cohorte, directorio)`. Reciben el DataFrame de `leer_cohorte` y toman de ahí los ids de prueba.
+- Validan con `predictions.verificar`, `verificar_intervalos` y `verificar_barrido` **antes** de escribir, y escriben con los exportadores del paquete. Si la validación falla, levantan el error del paquete y no escriben nada.
+- Tests con filas sintéticas armadas dentro del test sobre los 500 ids de prueba de `cohorte_anima.csv`:
+  - **los tres archivos pasan** y se escriben: 8.000 filas de predicciones, 24.000 de intervalos (500 × 8 × 6 niveles) y 960 de barrido (20 réplicas × 8 × 6);
+  - **se rechazan**, sin escribir el archivo: una fila duplicada, un nivel faltante (sin 95 %), 19 réplicas, un rasgo sin una de las dos líneas base, un id que no es de prueba, columnas fuera de orden y rasgos distintos de los pedidos.
+
+### Relevamiento de `extraccion.py`
+
+Sin cambios en el archivo. Se comparó contra la configuración de Gisladóttir que describe el brief. Los pasos de tiempo se verificaron corriendo el medidor sobre `informes/prueba_sintesis.wav`.
+
+**(a) F0: método y rango.**
+- Método: `Sound.to_pitch` sin método explícito, que en parselmouth es el comando "To Pitch..." de Praat: **autocorrelación (AC)**, con los parámetros por defecto (15 candidatos, umbrales estándar). Se verificó que da exactamente lo mismo que `to_pitch_ac`. **Coincide con Gisladóttir.**
+- Rango por sexo: hombres de 60 a 220 Hz, mujeres de 100 a 300 Hz (`RANGO_F0`). **Coincide con Gisladóttir.**
+- Paso de tiempo: el de Praat por defecto, 0,75 / piso de pitch (12,5 ms en hombres, 7,5 ms en mujeres).
+- **Difiere de Gisladóttir: f0_medio es el promedio (`np.mean`) de los frames sonoros, no la mediana.** El parámetro corresponde a `MedianF0` en la S6 (h²) y en la S2 (referencias y efectos de sexo). Los formantes sí usan mediana. No se cambió.
+
+**(b) Unidad de `f0_variabilidad`.**
+- Es el desvío estándar (`np.std`, ddof = 0) del F0 de los frames sonoros, **en Hz**, no en semitonos.
+- Coincide con `parametros.py` (unidad "Hz (SD)") y con Gisladóttir: `Vowels.StdF0` informa 9,80 (6,40) Hz en mujeres, valores que sólo tienen sentido en Hz. Según la respuesta del 23/10, la escala del módulo es el logaritmo de ese valor en Hz, como el resto. **Confirmado.**
+
+**(c) Fórmula del VTL.**
+- Modelo de tubo uniforme cerrado-abierto, L = (2n − 1) · c / (4 · Fn), calculado por separado desde F1, F2 y F3 y **promediado**, con **c = 35.000 cm/s**.
+- **Difiere de Gisladóttir**, que usa espaciado de formantes sobre **F1 a F4** con c = 35.300 cm/s. Ya está decidido corregirlo en la Etapa 7 (decisión 2 sobre la síntesis, 23/10).
+
+**Otras diferencias de configuración** (sin cambio):
+- Formantes: Burg, 5 formantes, techo de 5.000 Hz en hombres y 5.500 Hz en mujeres, ventana de 0,025 s y mediana sobre frames sonoros, como Gisladóttir. Pero el **paso de tiempo es el de Praat por defecto, 6,25 ms** (25 % de la ventana); la configuración de Gisladóttir que cita la decisión 1 es de 0,01 s.
+- Jitter: "local", sobre `To PointProcess (periodic, cc)` con los parámetros estándar de Praat (0,0001; 0,02; 1,3). Devuelve **fracción**, no % (ver la decisión 4 sobre la síntesis).
+- HNR: `to_harmonicity_cc`, con piso igual al piso de pitch del sexo, paso de 0,01 s y 1 período por ventana; promedio de los frames definidos.
+
 ## Resultado del pytest completo
 
-**222 tests: 222 pasan, 0 fallan, 0 salteados** (128 s, Python 3.12.4; sin los lentos, `pytest -m "not lento"`, unos 30 s). `tests/test_setup.py` es un chequeo de entorno que se corre aparte, y también pasa.
+**230 tests: 230 pasan, 0 fallan, 0 salteados** (149 s, Python 3.12.4; sin los lentos, `pytest -m "not lento"`, alrededor de 50 s). `tests/test_setup.py` es un chequeo de entorno que se corre aparte, y también pasa.
 
 | Archivo | Tests | Qué cubre |
 |---|---|---|
 | `tests/test_fenotipo.py` | 115 | Etapa 2 (h² por sexo, d, r, c y pendientes en los 8 parámetros, semillas, configuración neutra) y VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` |
 | `tests/test_poblacion.py` | 38 | Valores del brief, fuentes, referencias recalculadas desde las tablas, pendientes, configuración neutra |
 | `tests/test_generador.py` | 36 | VZ-01 a VZ-05 y VZ-07 sobre `genotipo.py` (se conservan; su retiro se decide en la Etapa 8) |
+| `tests/test_salida.py` | 8 | Formato de salida: los tres archivos pasan la validación del paquete; siete errores puestos a propósito se rechazan |
 | `tests/test_exportar_para_calibracion.py` | 10 | Datos para la calibración de Tomás: forma, coincidencia con los fenotipos, oráculo calibrado y rechazo de archivos mal armados |
 | `tests/test_parametros.py` | 15 | h² contra la tabla S6 |
 | `tests/test_cohorte.py` | 8 | VZ-06 y rechazo de archivos mal formados |
@@ -146,6 +178,7 @@ Los 144 valores están dentro de su tolerancia. El mayor desvío de la h² es 0,
 | 26/10 | ¿La media y el desvío de referencia son "dato" o "derivado"? | Manager, verificado contra las tablas originales: "derivado" (conversión de unidades físicas a logaritmo por momentos lognormales), salvo hnr, "dato". Implementado, con un test que las recalcula |
 | 26/10 | El orden por ΔR² de VZ-13 refleja el efecto del sexo (`informes/propuestas-23-10-etapa2.md`, punto 1) | Manager: se informa también el ΔR² parcial contra `ancestria sexo edad`, con su IC95 %, y VZ-13 se ordena por el parcial. Se implementa en la Etapa 5. El contraste entre dominios lo decide el grupo |
 | 26/10 | VZ-01 a VZ-05 y VZ-07 prueban `genotipo.py` (mismo documento, punto 2) | Manager: pasan a `fenotipo.py`, antes de `salida.py`. Implementado; `genotipo.py` y sus tests se conservan |
+| 29/10 | Unidad del jitter: % en la referencia, fracción en el medidor (observación del 26/10) | Manager: decisión 4 sobre la síntesis. La conversión se hace en un solo lugar, al entrar a `sintetizar` (Etapa 7), con un test |
 
 ## Desvíos respecto del brief
 
@@ -162,6 +195,11 @@ En los datos para la calibración de Tomás:
 
 - **Dos tests además de la validación que pide el brief:** que `y_real` sea exactamente el fenotipo de la réplica 0, y que el oráculo esté calibrado. El test importa el script con `importlib`, porque `scripts/` no está en el `pythonpath`.
 
+En el formato de salida:
+
+- **Las funciones reciben también los archivos de los que dependen.** `escribir_intervalos` recibe las predicciones, y `escribir_barrido` los intervalos y las predicciones, porque los verificadores del paquete los necesitan (el intervalo al 90 % tiene que coincidir con el de las predicciones, y la réplica 0 del barrido con los intervalos).
+- **Dos controles además de los del paquete:** columnas exactas y en el orden del contrato, y las dos líneas base para cada rasgo. `predictions.verificar` controla que cada (rasgo, línea base) presente cubra la partición de prueba, pero no que estén las dos, que es lo que pide el contrato. Con `rasgos=` se exige además el conjunto exacto de rasgos.
+
 Otros, sin efecto sobre el código del prototipo:
 
 - **Etapa 0:** la variante con flutter, aspiración e inclinación espectral se midió en un archivo temporal; en `informes/` queda un solo WAV.
@@ -169,7 +207,16 @@ Otros, sin efecto sobre el código del prototipo:
 
 ## Preguntas abiertas
 
-Las tres preguntas del 23/10 (tipo de fuente de las referencias, ΔR² parcial y casos VZ sobre `fenotipo.py`) quedaron respondidas el 26/10: ver "Decisiones consultadas".
+Las tres preguntas del 23/10 quedaron respondidas el 26/10, y la de la unidad del jitter el 29/10: ver "Decisiones consultadas". La escala de `f0_variabilidad` quedó confirmada en el relevamiento.
 
-1. **Escala de `f0_variabilidad`.** Se confirma en el relevamiento de `extraccion.py`.
-2. **Unidad del jitter entre la referencia y el medidor (observación para la Etapa 7).** La referencia de `poblacion.py` está en **porcentaje** (Goy: 0,37 %), así que `muestrear` va a devolver el jitter en %. `extraccion.py`, en cambio, lo devuelve como **fracción** (0,0037 para 0,37 %). Al comparar pedido con medido en VZ-08, y al armar el control de jitter de la síntesis (desvío relativo = jitter / 1,128), hay que pasar de % a fracción. No requiere decisión ahora; se deja anotado para no perderlo.
+1. **f0_medio se mide con el promedio y no con la mediana.** `extraccion.py` toma el promedio de los frames sonoros, pero el parámetro y todas sus fuentes (S6 para la h², S2 para las referencias y el efecto del sexo) son `MedianF0`. Hoy sólo afecta a VZ-08, que mide el audio sintético. En una vocal sostenida con un contorno lento, promedio y mediana deberían dar casi lo mismo, pero la definición no coincide con la del rasgo. **Propuesta:** pasar a mediana en el mismo cambio de `extraccion.py` de la Etapa 7 (decisiones 1 y 2), y declararlo. No se cambió nada.
+2. **Paso de tiempo de los formantes.** `extraccion.py` usa el de Praat por defecto (6,25 ms); la configuración de Gisladóttir que cita la decisión 1 es de 0,01 s. Con la mediana sobre una vocal sintética estable no debería cambiar el resultado. ¿Se fija en 0,01 s en el mismo cambio de la Etapa 7?
+
+## Aclaraciones para el bloque 2
+
+No bloquean el arranque (`modelo.py`, semana del 3/11), pero conviene tenerlas antes de la semana del 17/11:
+
+1. **Dónde van `tabla_predictiva` y `correr_replica`.** La tabla de archivos del brief no las ubica. Propuesta: en `lineas_base.py`, que ya arma los tres modelos. Alternativa: un archivo nuevo, `replicas.py`.
+2. **Reusar el oráculo.** El brief pide que la tabla predictiva calcule el oráculo "con la misma función que `exportar_para_calibracion.py`". Esa función está hoy dentro del script, y un módulo de `src/` no debería importar de `scripts/`. Propuesta: mover el cálculo a `fenotipo.py` (por ejemplo, `oraculo(cohorte, fenotipos, parametros, efectos)`) y que el script lo llame. El CSV que se le mandó a Tomás no cambia.
+3. **Error de convergencia con nombres.** `modelo.py` es genérico y no conoce los nombres de los parámetros. Plan: `ajustar` levanta un error genérico de no convergencia con el mensaje del optimizador, y `lineas_base.py` lo vuelve a levantar con el parámetro y el modelo. Sin pregunta, salvo que prefieras otra cosa.
+4. **Contrato v2 congelado y v1 de la capa de Tomás:** hacen falta para la semana del 24/11. Si no llegan, el adaptador pasa a diciembre, como dice el brief.
