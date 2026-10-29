@@ -18,7 +18,7 @@ import pytest
 
 from tfc_voz.cohorte import generar_cohorte
 from tfc_voz.fenotipo import (INDICE_SEMILLA, edad_centrada, generar_fenotipos,
-                              media_y_escala, tramo60)
+                              media_y_escala, oraculo, tramo60)
 from tfc_voz.genotipo import SEMILLA
 from tfc_voz.parametros import PARAMETROS
 from tfc_voz.poblacion import configuracion_neutra
@@ -192,3 +192,21 @@ def test_parametro_sin_indice_de_semilla_es_un_error():
 def test_indices_de_semilla_fijos_y_distintos():
     assert set(INDICE_SEMILLA) == {p.nombre for p in PARAMETROS}
     assert len(set(INDICE_SEMILLA.values())) == len(INDICE_SEMILLA)
+
+
+def test_oraculo_deja_solo_el_ruido_ambiental(cohorte_grande, fenotipos):
+    """(y - mu_oraculo) / sigma_oraculo = e / sqrt(1 - h2), exacto, en cada parametro."""
+    orac = oraculo(cohorte_grande, fenotipos, PARAMETROS, efectos_de_prueba())
+    assert list(orac.columns) == ["individuo_id", "rasgo", "mu_oraculo", "sigma_oraculo"]
+    assert orac[["individuo_id", "rasgo"]].equals(fenotipos[["individuo_id", "rasgo"]])
+    for p in PARAMETROS:
+        o = orac[orac["rasgo"] == p.nombre]
+        z = (columna(fenotipos, p.nombre, "y") - o["mu_oraculo"].to_numpy()) / o["sigma_oraculo"].to_numpy()
+        assert np.allclose(z, columna(fenotipos, p.nombre, "e") / np.sqrt(1 - p.heredabilidad), atol=1e-9)
+
+
+def test_oraculo_rechaza_fenotipos_fuera_de_orden():
+    cohorte = generar_cohorte()
+    fen = generar_fenotipos(cohorte, PARAMETROS[:1], configuracion_neutra(), SEMILLA)
+    with pytest.raises(ValueError, match="orden de la cohorte"):
+        oraculo(cohorte, fen.iloc[::-1], PARAMETROS[:1], configuracion_neutra())

@@ -81,3 +81,30 @@ def generar_fenotipos(cohorte, parametros, efectos, semilla):
             "y": m + s * (g + e),
         }))
     return pd.concat(bloques, ignore_index=True)
+
+
+def oraculo(cohorte, fenotipos, parametros, efectos):
+    """Media y desvio VERDADEROS de cada persona y parametro, conocidos por diseno.
+
+    mu_oraculo = m + s * g y sigma_oraculo = s * sqrt(1 - h2): la distribucion de
+    y dado todo lo que la genera salvo e. No son predicciones de ningun modelo.
+    fenotipos: la salida de generar_fenotipos sobre la misma cohorte.
+    Devuelve un DataFrame con individuo_id, rasgo, mu_oraculo y sigma_oraculo,
+    en el orden de la cohorte dentro de cada rasgo.
+    """
+    ids = cohorte["individuo_id"].to_numpy()
+    sexo, edad = cohorte["sexo"].to_numpy(), cohorte["edad"].to_numpy()
+    subpob = cohorte["subpoblacion"].to_numpy()
+    bloques = []
+    for p in parametros:
+        f = fenotipos[fenotipos["rasgo"] == p.nombre]
+        if not np.array_equal(f["individuo_id"].to_numpy(), ids):
+            raise ValueError(f"{p.nombre}: los fenotipos no estan en el orden de la cohorte")
+        m, s = media_y_escala(efectos[p.nombre], sexo, edad, subpob)
+        bloques.append(pd.DataFrame({
+            "individuo_id": ids,
+            "rasgo": p.nombre,
+            "mu_oraculo": m + s * f["g"].to_numpy(),
+            "sigma_oraculo": s * np.sqrt(1.0 - p.heredabilidad),
+        }))
+    return pd.concat(bloques, ignore_index=True)

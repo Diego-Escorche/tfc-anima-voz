@@ -9,6 +9,7 @@ mu_oraculo y sigma_oraculo son la media y el desvio VERDADEROS de cada persona,
 conocidos por diseno: mu_oraculo = m + s * g y sigma_oraculo = s * sqrt(1 - h2).
 No son predicciones de ningun modelo. Sirven para que la capa de calibracion
 pruebe con datos que tienen la forma real de Voz antes de que exista el modelo.
+El calculo es fenotipo.oraculo, el mismo que usa la tabla predictiva.
 
 Las columnas siguen la propuesta que Diego le mando a Tomas el 26/10. Si el
 contrato congelado usa otros nombres, se renombran en COLUMNAS, sin tocar la
@@ -23,12 +24,11 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(RAIZ / "src"), str(RAIZ)]
 from tfc_voz.cohorte import leer_cohorte  # noqa: E402
-from tfc_voz.fenotipo import generar_fenotipos, media_y_escala  # noqa: E402
+from tfc_voz.fenotipo import generar_fenotipos, oraculo  # noqa: E402
 from tfc_voz.genotipo import SEMILLA  # noqa: E402
 from tfc_voz.parametros import PARAMETROS  # noqa: E402
 from tfc_voz.poblacion import EFECTOS  # noqa: E402
@@ -40,23 +40,16 @@ PARTICIONES = ("calibracion", "prueba")
 def armar_datos(cohorte, parametros=PARAMETROS, efectos=EFECTOS, semilla=SEMILLA):
     """Filas de calibracion y prueba con y real, media y desvio oraculo."""
     fenotipos = generar_fenotipos(cohorte, parametros, efectos, semilla)
-    sexo = cohorte["sexo"].to_numpy()
-    edad = cohorte["edad"].to_numpy()
-    subpob = cohorte["subpoblacion"].to_numpy()
-    elegidos = cohorte["particion"].isin(PARTICIONES).to_numpy()
-    bloques = []
-    for p in parametros:
-        f = fenotipos[fenotipos["rasgo"] == p.nombre]
-        m, s = media_y_escala(efectos[p.nombre], sexo, edad, subpob)
-        bloques.append(pd.DataFrame({
-            "individuo_id": cohorte["individuo_id"].to_numpy()[elegidos],
-            "particion": cohorte["particion"].to_numpy()[elegidos],
-            "rasgo": p.nombre,
-            "y_real": f["y"].to_numpy()[elegidos],
-            "mu_oraculo": (m + s * f["g"].to_numpy())[elegidos],
-            "sigma_oraculo": (s * np.sqrt(1.0 - p.heredabilidad))[elegidos],
-        }))
-    return pd.concat(bloques, ignore_index=True)[COLUMNAS]
+    datos = (oraculo(cohorte, fenotipos, parametros, efectos)
+             .merge(fenotipos[["individuo_id", "rasgo", "y"]], on=["individuo_id", "rasgo"])
+             .merge(cohorte[["individuo_id", "particion"]], on="individuo_id")
+             .rename(columns={"y": "y_real"}))
+    return datos[datos["particion"].isin(PARTICIONES)].reset_index(drop=True)[COLUMNAS]
+
+
+def escribir(datos, ruta):
+    """Escribe el CSV con finales de linea LF, igual en cualquier sistema."""
+    datos.to_csv(ruta, index=False, lineterminator="\n")
 
 
 def validar(datos, cohorte, parametros=PARAMETROS):
@@ -91,7 +84,7 @@ def main():
     datos = armar_datos(cohorte)
     validar(datos, cohorte)
     args.salida.parent.mkdir(parents=True, exist_ok=True)
-    datos.to_csv(args.salida, index=False, lineterminator="\n")
+    escribir(datos, args.salida)
     print(f"{args.salida}: {len(datos)} filas, validacion OK")
     print(datos.groupby(["rasgo", "particion"]).size().unstack().to_string())
 

@@ -220,3 +220,13 @@ No bloquean el arranque (`modelo.py`, semana del 3/11), pero conviene tenerlas a
 2. **Reusar el oráculo.** El brief pide que la tabla predictiva calcule el oráculo "con la misma función que `exportar_para_calibracion.py`". Esa función está hoy dentro del script, y un módulo de `src/` no debería importar de `scripts/`. Propuesta: mover el cálculo a `fenotipo.py` (por ejemplo, `oraculo(cohorte, fenotipos, parametros, efectos)`) y que el script lo llame. El CSV que se le mandó a Tomás no cambia.
 3. **Error de convergencia con nombres.** `modelo.py` es genérico y no conoce los nombres de los parámetros. Plan: `ajustar` levanta un error genérico de no convergencia con el mensaje del optimizador, y `lineas_base.py` lo vuelve a levantar con el parámetro y el modelo. Sin pregunta, salvo que prefieras otra cosa.
 4. **Contrato v2 congelado y v1 de la capa de Tomás:** hacen falta para la semana del 24/11. Si no llegan, el adaptador pasa a diciembre, como dice el brief.
+
+## Respuestas del 29/10
+
+El manager respondió las dos preguntas y las cuatro aclaraciones (brief del prototipo, "Respuestas al avance del 29/10"):
+
+- **Preguntas 1 y 2:** se adoptan. Mediana de F0 y paso de formantes de 0,01 s, en el cambio de `extraccion.py` de la Etapa 7 (decisión 5). No se tocó `extraccion.py`.
+- **Aclaración 1:** `tabla_predictiva` y `correr_replica` van en un archivo nuevo, `replicas.py`.
+- **Aclaración 2: hecha.** El cálculo pasó a `fenotipo.oraculo` y `scripts/exportar_para_calibracion.py` lo llama. Un test nuevo regenera el CSV y compara su SHA-256 con el del archivo enviado a Tomás (`22fb376e…`, commit `333940a`): es idéntico. Otros dos tests cubren `oraculo`: deja exactamente e / √(1 − h²) y rechaza fenotipos que no estén en el orden de la cohorte.
+- **Aclaraciones 3 y 4:** de acuerdo con el plan; si el contrato y la capa no llegan para el 24/11, el adaptador pasa a diciembre.
+- **Desvíos de `salida.py`:** aprobados.

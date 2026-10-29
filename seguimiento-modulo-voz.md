@@ -25,13 +25,14 @@
 - [x] Datos de Voz para la capa de calibración de Tomás: `scripts/exportar_para_calibracion.py` escribe `informes/voz_para_calibracion.csv` (8.000 filas de calibración y prueba, media y desvío oráculo; validación OK). Columnas según la propuesta de Diego a Tomás del 26/10 (26/10)
 - [x] VZ-01 a VZ-05 y VZ-07 sobre `fenotipo.py` (decisión del 26/10): VZ-01 a VZ-04 son el test de h² dentro de cada sexo de la Etapa 2; VZ-05 (permutación) y VZ-07 (20 semillas del barrido) agregados. Todos en verde (26/10)
 - [x] Formato de salida (adelantado de la Etapa 6): `salida.py` valida con `anima_spine` y escribe tres archivos — predicciones, intervalos en seis niveles y barrido de 20 réplicas; rechaza fila duplicada, nivel faltante y 19 réplicas (29/10)
-- [x] Relevamiento de `extraccion.py` (sin cambiarlo) e informe de cierre del bloque, `informes/avance-bloque-1.md`. Diferencias con Gisladóttir: f0_medio con promedio y no mediana, VTL por tubo sobre F1 a F3 (29/10)
+- [x] Relevamiento de `extraccion.py` (sin cambiarlo) e informe de cierre del bloque, `informes/avance-bloque-1.md`. Diferencias con Gisladóttir: f0_medio con promedio y no mediana, VTL por tubo sobre F1 a F3 (29/10). Las dos se corrigen en la Etapa 7 (decisiones 2 y 5)
+- [x] Oráculo movido a `fenotipo.py` (`oraculo`), respuesta del 29/10: el script lo llama y un test confirma que el CSV regenerado es idéntico, byte a byte, al que se le mandó a Tomás (29/10)
 
 ## Fase 3 — Modelo heterocedástico (3 nov – 30 nov)
 Es el bloque 2 del brief del prototipo. Informe semanal en `informes/avance-bloque-2.md`.
 - [ ] Semana del 3/11 — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
 - [ ] Semana del 10/11 — `lineas_base.py`: las dos líneas base y el modelo completo, con los "Ajustes del 29/10" (definiciones compartidas con `fenotipo.py`, test de la línea base 2, test con g permutado)
-- [ ] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`
+- [ ] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`, en un archivo nuevo, `replicas.py`, que se suma a la tabla de archivos del README
 - [ ] Semana del 17/11 — Etapa 5: `metricas.py`, sólo funciones y tests (cobertura, ΔR² total y parcial, CRPS, bootstrap pareado); VZ-11 a VZ-13 se corren en diciembre
 - [ ] Semana del 17/11 — control de integración: ΔR² parcial promedio de 20 réplicas a menos de 0,025 de la h² de cada parámetro
 - [ ] Semana del 24/11 — adaptador de la Etapa 4 con datos oráculo, sólo si Diego pasó el contrato congelado y la v1 de la capa de Tomás está disponible; si no, pasa a diciembre
@@ -104,9 +105,16 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **ΔR² parcial:** VZ-11 y VZ-13 informan, contra `ancestria sexo edad`, el ΔR² total y el parcial, (R² completo − R² base) / (1 − R² base), cada uno con su IC95 % por bootstrap pareado con los mismos remuestreos. **VZ-13 se ordena por el parcial.** Contra `solo intercepto`, sólo el total. Se implementa en la Etapa 5. El contraste entre dominios (`anima_spine/compare.py`) lo decide el grupo; no se toca el paquete.
   - **Casos VZ sobre `fenotipo.py`:** VZ-01 a VZ-04 pasan a ser el test de h² dentro de cada sexo de la Etapa 2, y se agregan VZ-05 (permutación) y VZ-07 (20 semillas, 20261019 + r) sobre `fenotipo.py`, con los mismos criterios. `genotipo.py` y sus tests quedan; si se retiran, se decide en la Etapa 8.
 - **27/10 — Calibración con la capa común de Tomás** (brief del prototipo, Etapa 4): Voz no escribe una calibración propia. Usa `anima_spine/calibracion.py` (contrato v2 del 27/10, que se congela alrededor del 31/10). `calibracion.py` del módulo es un adaptador sin lógica de calibración; el intervalo al 90 % de `predicciones_voz.csv` sale de la salida de la capa en nivel 0,90. Lo que la capa no resuelva se anota como pedido para Tomás. Plan B (calibración provisoria) sólo si la capa no está a fin de noviembre y con el visto bueno de Diego.
-- **29/10 — Ajustes de la Etapa 3** (brief del prototipo, "Ajustes del 29/10"): `lineas_base.py` usa `edad_centrada` y `tramo60` de `fenotipo.py`; se mantiene el término g · edad_c; `ajustar` levanta un error si el optimizador no converge; tests de la línea base 2 y con g permutado; `tabla_predictiva` (16.000 filas, columnas del contrato v2, oráculo reusado de `exportar_para_calibracion.py`); `correr_replica(cohorte, r)`; control de integración del ΔR² parcial sobre 20 réplicas (tolerancia 0,025).
+- **29/10 — Ajustes de la Etapa 3** (brief del prototipo, "Ajustes del 29/10"): `lineas_base.py` usa `edad_centrada` y `tramo60` de `fenotipo.py`; se mantiene el término g · edad_c; `ajustar` levanta un error si el optimizador no converge; tests de la línea base 2 y con g permutado; `tabla_predictiva` (16.000 filas, columnas del contrato v2, oráculo reusado de `fenotipo.oraculo`); `correr_replica(cohorte, r)`; control de integración del ΔR² parcial sobre 20 réplicas (tolerancia 0,025).
 - **29/10 — Unidad del jitter en la síntesis** (decisión 4 de la Etapa 7, sobre la observación del 26/10): `muestrear` devuelve el jitter en %; se convierte a fracción en un solo lugar, al entrar a `sintetizar`; la tabla de VZ-08 compara en la misma unidad y la declara; un test verifica que 0,37 % entra como 0,0037.
 - **29/10 — Plan del bloque 2** (3 al 30 de noviembre): una semana por paso (modelo; líneas base; tabla predictiva, réplicas, métricas y control de integración; adaptador con datos oráculo). Si una semana se atrasa no se comprime la siguiente: se avisa en `informes/avance-bloque-2.md` y Diego decide.
+- **29/10 — Respuestas al avance del 29/10** (brief del prototipo, "Respuestas al avance del 29/10"):
+  - **Decisión 5 de la síntesis:** en el mismo cambio de `extraccion.py` de la Etapa 7, f0_medio pasa a la mediana de los frames sonoros (como `MedianF0`) y el paso de los formantes se fija en 0,01 s. El paso del pitch queda como está. Después, pytest completo y prueba de la Etapa 0 (F0 a menos de 5 Hz).
+  - **`replicas.py`:** `tabla_predictiva` y `correr_replica` van en un archivo nuevo; `lineas_base.py` sólo arma los modelos.
+  - **Oráculo en `fenotipo.py`:** el script lo llama; un test confirma que el CSV regenerado es idéntico al enviado a Tomás.
+  - **Error de convergencia:** `modelo.py` levanta un error genérico con el mensaje del optimizador y `lineas_base.py` lo vuelve a levantar nombrando el parámetro y el modelo.
+  - **Contrato y capa de Tomás:** si no llegan para la semana del 24/11, el adaptador pasa a diciembre.
+  - **Desvíos de `salida.py` aprobados.** `predictions.verificar` no exige las dos líneas base; se corrige en `anima_spine` 1.2 y, hasta entonces, el control propio de `salida.py` queda.
 
 ## Decisiones pendientes del grupo (bloquean)
 
@@ -151,6 +159,7 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 - **Fase 4:** "Etapa 4: calibración provisoria, split conformal normalizado (reemplazable por la capa de Tomás)". Desde el 27/10, `calibracion.py` es un adaptador a la capa común; la provisoria quedó como plan B.
 - **Fase 5:** "VZ-13: tabla de los 8 parámetros ordenados por ΔR²". Desde el 26/10 se ordena por el ΔR² parcial.
 - **Dependencias:** la fila de la capa de calibración decía "El prototipo usa una provisoria (`calibracion.py`, reemplazable)", con fecha 1-7 dic.
+- **Decisiones, ajustes de la Etapa 3:** "oráculo reusado de `exportar_para_calibracion.py`". Desde la respuesta del 29/10, el cálculo vive en `fenotipo.oraculo` y el script lo llama.
 
 ## Reemplazado el 23/10
 
