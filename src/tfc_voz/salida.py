@@ -1,6 +1,6 @@
 """
 Escritura de los tres archivos de salida del modulo, segun el contrato del
-paquete comun anima_spine 1.1:
+paquete comun anima_spine 2.2:
 
   predicciones_voz.csv  una fila por persona de prueba, rasgo y linea base
   intervalos_voz.csv    una fila por persona de prueba, rasgo y nivel nominal

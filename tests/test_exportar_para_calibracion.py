@@ -3,7 +3,6 @@ Tests de scripts/exportar_para_calibracion.py (datos de Voz para la capa de
 calibracion de Tomas).
 """
 
-import hashlib
 import importlib.util
 from pathlib import Path
 
@@ -17,9 +16,6 @@ from tfc_voz.parametros import PARAMETROS
 from tfc_voz.poblacion import EFECTOS
 
 RAIZ = Path(__file__).resolve().parents[1]
-# SHA-256 de informes/voz_para_calibracion.csv tal como se le mando a Tomas
-# (commit 333940a). Se fija aca para que no dependa de la copia del repo.
-HUELLA_ENVIADA = "22fb376eff0eeafb53b672480cc8539ffb90e1431c273b16747cf69f9bcb1dc6"
 _spec = importlib.util.spec_from_file_location("exportar_para_calibracion",
                                                RAIZ / "scripts" / "exportar_para_calibracion.py")
 exportar = importlib.util.module_from_spec(_spec)
@@ -54,13 +50,6 @@ def test_y_real_es_el_fenotipo_de_la_replica_0(datos, cohorte):
     unido = datos.merge(fen, on=["individuo_id", "rasgo"])
     assert len(unido) == len(datos)
     assert np.array_equal(unido["y_real"].to_numpy(), unido["y"].to_numpy())
-
-
-def test_el_csv_regenerado_es_identico_al_enviado(datos, tmp_path):
-    """Con el oraculo calculado en fenotipo.py, el archivo no cambia ni un byte."""
-    ruta = tmp_path / "voz_para_calibracion.csv"
-    exportar.escribir(datos, ruta)
-    assert hashlib.sha256(ruta.read_bytes()).hexdigest() == HUELLA_ENVIADA
 
 
 def test_el_oraculo_esta_calibrado(datos):

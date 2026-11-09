@@ -1,7 +1,7 @@
 # Seguimiento — módulo de Voz
 
-**Última actualización:** 29 oct 2026
-**Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 29/10: Fase 1 completa (incluida la Etapa 0, que pasa) y Fase 2 (bloque 1 del brief) completa, a la espera de que Diego confirme su cierre. El bloque 2 (3 al 30 de noviembre) cubre la Fase 3 y la conexión con la capa de calibración de Tomás.
+**Última actualización:** 9 nov 2026
+**Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 9/11: Fases 1 y 2 completas. El bloque 2 arrancó el 9/11 con la entrega de Diego (paquete `anima_spine` 2.2 y cohorte 2.0); la Etapa 3, prevista para la semana del 3/11, quedó corrida a la semana del 9/11. Desde el 3/11 la hipótesis es la reformulada: por dominio, que el modelo recupera el nivel de señal declarado; ningún contraste entre dominios se afirma.
 
 **Riesgo principal:** que el código no arranque. Venía sin avance desde fines de septiembre; la semana 1 es a propósito el hito más barato.
 
@@ -30,7 +30,20 @@
 
 ## Fase 3 — Modelo heterocedástico (3 nov – 30 nov)
 Es el bloque 2 del brief del prototipo. Informe semanal en `informes/avance-bloque-2.md`.
-- [ ] Semana del 3/11 — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
+
+Semana del 9/11, en el orden de la entrega de Diego del 9/11 (cada punto habilita al siguiente):
+- [x] 1. Paquete `anima_spine` 2.2 en el repo, con la cohorte 2.0 (503 personas de 1000 Genomes y 1.497 simuladas; huella `8203824a…`, coincide con los metadatos). Suite del paquete: 43 pasan, 16 salteadas (contrato de módulos que no exportaron) (9/11)
+- [x] 2. Cohorte 1.1 reemplazada por la 2.0 en todo el módulo. `informes/voz_para_calibracion.csv` (hecho sobre la 1.1) retirado por obsoleto; queda en el historial de git (9/11)
+- [ ] 3. Los ocho h² en un único archivo de configuración, con un test que falle si alguno aparece escrito a mano en otro `.py`
+- [ ] 4. Los dos niveles declarados en esa configuración: caso base 7,1 % y segundo nivel 0,15 %; el reporte imprime cuál usó, con su fuente y fecha
+- [ ] 5. `voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas (160.000 filas; columnas nuevas `replica`, `semilla` y `sexo`). **Comprometido para el viernes 13/11** (lo espera Temperamento); si no llega, avisar el miércoles 11/11
+- [ ] 6. Etapa 3: el modelo heterocedástico
+- [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales, g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
+- [ ] 8. `recuperacion_voz.csv` y criterio de recuperación (tolerancia 0,015, sobre el caso base)
+- [ ] 9. Análisis de dos niveles
+
+Plan por semanas del 29/10 (se reordena con el brief del 5/11):
+- [ ] Semana del 3/11 (corrida a la del 9/11) — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
 - [ ] Semana del 10/11 — `lineas_base.py`: las dos líneas base y el modelo completo, con los "Ajustes del 29/10" (definiciones compartidas con `fenotipo.py`, test de la línea base 2, test con g permutado)
 - [ ] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`, en un archivo nuevo, `replicas.py`, que se suma a la tabla de archivos del README
 - [ ] Semana del 17/11 — Etapa 5: `metricas.py`, sólo funciones y tests (cobertura, ΔR² total y parcial, CRPS, bootstrap pareado); VZ-11 a VZ-13 se corren en diciembre
@@ -75,7 +88,7 @@ Del 22 dic al 4 ene: fiestas, nada comprometido.
 
 | Qué | De quién | Para cuándo | Estado o plan alternativo |
 |---|---|---|---|
-| `cohorte_anima.csv` congelada | Grupo | 27 oct | **Existe:** v1.1 del paquete `anima_spine`, congelada con huella SHA-256 y copiada al repo el 23/10 |
+| `cohorte_anima.csv` congelada | Grupo | 27 oct | **Existe:** v2.0 (mixta: 503 personas de 1000 Genomes y 1.497 simuladas), congelada el 6/11 con huella SHA-256 y copiada al repo el 9/11 con el paquete `anima_spine` 2.2 |
 | Línea base heterocedástica (OE2) | Grupo | 24-30 nov | El prototipo arma las dos líneas base en `lineas_base.py`; informar contra una sola si falta |
 | Capa de calibración conformal (OE4) | Tomás | Contrato v2 congelado ~31/10; v1 de la capa en noviembre | **Voz usa la capa común de Tomás** (decisión del 27/10): `calibracion.py` es un adaptador sin lógica propia y se conecta con datos oráculo en la segunda quincena de noviembre. Plan B, sólo con el visto bueno de Diego: si a fin de noviembre la capa no está, calibración provisoria (split conformal normalizado, ~6 h) detrás de la misma firma del adaptador |
 | ΔR² de Rostro y Temperamento sobre la misma cohorte | Audrey y Tomás | 26 ene | El documento individual se sostiene con el ΔR² de Voz y su IC |
@@ -116,10 +129,14 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **Contrato y capa de Tomás:** si no llegan para la semana del 24/11, el adaptador pasa a diciembre.
   - **Desvíos de `salida.py` aprobados.** `predictions.verificar` no exige las dos líneas base; se corrige en `anima_spine` 1.2 y, hasta entonces, el control propio de `salida.py` queda.
 
+- **1/11 — Cohorte 2.0** (grupo; congelada el 6/11): mixta, 503 personas reales de 1000 Genomes y 1.497 simuladas. Es la única cohorte; la 1.1 queda en el histórico y nada se calcula sobre ella. Los rasgos de todas las personas siguen siendo simulados.
+- **3/11 — Hipótesis reformulada** (aprobada por el tutor): ningún contraste entre dominios se afirma. Por dominio, el modelo recupera el nivel de señal declarado, con una tolerancia que es un criterio verificable. `compare.comparar` ya no devuelve `hipotesis_dos_niveles`.
+- **Entre el 1 y el 5/11 — Dos niveles declarados:** caso base 7,1 % (heredabilidad por variantes comunes, agregado de los ocho parámetros) y segundo nivel 0,15 % (lo que recuperan las tres variantes publicadas). No se elige ni se ajusta ningún nivel mirando resultados.
+- **9/11 — Paquete `anima_spine` 2.2:** el criterio de recuperación tiene tolerancia 0,015 (antes 0,005) y se evalúa sobre el caso base; el segundo nivel se informa sin criterio. `predictions.verificar` exige las dos líneas base. Fuera de alcance: el puntaje poligénico de estatura y las dos variantes nuevas del meta-análisis entre poblaciones.
+
 ## Decisiones pendientes del grupo (bloquean)
 
 - [ ] Con qué criterio se eligen las h² en los tres módulos. Queda vinculado a las decisiones 2 y 3 del documento integrado; Rostro mantiene 7,9 % por ahora
-- [ ] Qué afirma el TFC: un gradiente entre dominios, o que la maquinaria funciona y cómo responde a la heredabilidad
 
 ## Datos a averiguar
 
@@ -152,6 +169,13 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 - [x] Sección 1.2: falta un punto o un guión después de "en 3D"
 
 ---
+
+## Reemplazado el 9/11
+
+- **Fase 2:** "Columna vertebral `anima_spine` 1.1 en el repo: `cohorte_anima.csv` v1.1". Desde el 9/11 el paquete es el 2.2 y la cohorte, la 2.0.
+- **Fase 2:** "Oráculo movido a `fenotipo.py`: un test confirma que el CSV regenerado es idéntico al que se le mandó a Tomás". Ese CSV era de la 1.1 y quedó obsoleto; el test se retiró y el archivo se regenera sobre la 2.0 (punto 5 de la entrega).
+- **Dependencias:** la fila de la cohorte decía "v1.1 del paquete `anima_spine`, copiada al repo el 23/10".
+- **Decisiones pendientes:** "Qué afirma el TFC: un gradiente entre dominios, o que la maquinaria funciona y cómo responde a la heredabilidad". Resuelta el 3/11 con la hipótesis reformulada.
 
 ## Reemplazado el 29/10
 

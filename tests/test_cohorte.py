@@ -2,6 +2,7 @@
 Tests de cohorte.py: VZ-06 y rechazo de archivos mal formados.
 """
 
+import json
 import shutil
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import pytest
 from tfc_voz.cohorte import COLUMNAS, generar_cohorte, leer_cohorte
 
 COHORTE_REAL = Path(__file__).resolve().parents[1] / "cohorte_anima.csv"
+HUELLA_2_0 = "8203824aff641fb8a7e54a09d902a887407c81f70b000846b37b9f296609abb6"
 TAMANIOS = {"entrenamiento": 1000, "calibracion": 500, "prueba": 500}
 
 
@@ -27,7 +29,7 @@ def comprobar_vz06(cohorte):
 @pytest.fixture(scope="module")
 def cohorte_real():
     if not COHORTE_REAL.exists():
-        pytest.skip("cohorte_anima.csv no esta en el repo: copiarla del paquete anima_spine 1.1")
+        pytest.skip("cohorte_anima.csv no esta en el repo: copiarla del paquete anima_spine 2.2 (cohorte 2.0)")
     return leer_cohorte(COHORTE_REAL)
 
 
@@ -45,6 +47,16 @@ def test_leer_cohorte_devuelve_el_esquema(cohorte_real):
     assert list(cohorte_real.columns) == COLUMNAS
     assert len(cohorte_real) == 2000
     assert set(cohorte_real["sexo"]) == {0, 1}
+
+
+def test_la_cohorte_del_repo_es_la_2_0(cohorte_real):
+    """La 2.0 congelada (entrega del 9/11): 503 personas reales de 1000 Genomes, 253 / 125 / 125."""
+    meta = json.loads(COHORTE_REAL.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    assert meta["version"] == "2.0" and meta["sha256_csv"] == HUELLA_2_0
+    reales = cohorte_real[cohorte_real["origen"] == "1000g"]
+    assert len(reales) == 503 and reales["muestra_1000g"].is_unique
+    assert reales["particion"].value_counts().to_dict() == {"entrenamiento": 253, "calibracion": 125,
+                                                            "prueba": 125}
 
 
 def test_generar_cohorte_misma_semilla_mismo_resultado():

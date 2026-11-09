@@ -18,7 +18,9 @@ pueden comparar.
 ## Qué es de quién
 
 La columna vertebral tiene **solo** los individuos: id, subpoblación, sexo,
-edad y a qué partición cae cada uno. Nada de rostro, voz ni temperamento.
+edad, a qué partición cae cada uno y, desde la 2.0, si es una persona real de
+1000 Genomes o simulada. Nada de rostro, voz ni temperamento: los rasgos de
+todas las personas, reales o simuladas, los simula cada módulo.
 
 Cada módulo sigue siendo dueño de todo lo suyo:
 
@@ -30,6 +32,121 @@ Cada módulo sigue siendo dueño de todo lo suyo:
 
 Lo único que cambia en cada módulo es de dónde salen los individuos: en vez
 de generarlos, los lee.
+
+## Versión 2.2 (9/11/2026): la tolerancia del criterio de recuperación
+
+La nota de Rostro del 9/11/2026 encontró que el ΔR² parcial calculado contra
+"ancestria sexo edad" sale sistemáticamente POR ENCIMA del nivel declarado, y
+que con la tolerancia de 0,005 el margen quedaba justo. Lo verifiqué por
+simulación y la causa está clara: la línea base no se conoce, se estima sobre
+`entrenamiento` y se evalúa fuera de muestra. Estimar sus k coeficientes sobre
+n personas cuesta alrededor de k/n en R² fuera de muestra, y ese costo queda
+solo en el denominador de la línea base.
+
+Corrimiento medido sobre el promedio de 20 réplicas, con k = 6 y n = 1.000:
+
+| Línea base | Dominios | Corrimiento del parcial |
+| --- | --- | --- |
+| Efecto real cero | Facial, temperamental | +0,0045 a +0,0065 |
+| Efecto real distinto de cero | Vocal | +0,0064 a +0,0087 |
+
+El percentil 95 del desvío absoluto es 0,0091. Cambios:
+
+- **`TOLERANCIA_RECUPERACION` pasa de 0,005 a 0,015.** Absorbe el corrimiento y
+  su ruido, y sigue pudiendo fallar: un error en la línea base, en el bootstrap
+  o en el generador se aparta mucho más que 1,5 puntos.
+- **El criterio se evalúa sobre el caso base.** El segundo nivel declarado se
+  informa con su intervalo y sin criterio de recuperación: con 500 personas de
+  prueba un nivel del orden del 0,15 % no se distingue de cero, y una
+  tolerancia absoluta de 0,015 sería diez veces el nivel que pretende verificar.
+- **El corrimiento se declara, no se corrige.** Es una propiedad de estimar la
+  línea base, no del circuito del genotipo, y recortar el R² negativo de la
+  línea base sería maquillar el dato.
+- **`ContratoError`, subclase de `ValueError`, se define en el paquete.** Así la
+  capa de calibración y los validadores levantan el mismo tipo y un módulo
+  puede capturar uno solo.
+- **El comentario de `CAMPOS` que decía `"PC3"` ahora dice `"pc01"`**, y aclara
+  que el contrato no fija el formato del nombre del rasgo.
+
+La cohorte 2.0 y su huella no cambian con esta versión. El lugar de
+`calibracion.py` queda reservado para la 2.3.
+
+## Versión 2.1 (5/11/2026): la hipótesis reformulada
+
+El 3/11/2026 el tutor aprobó la reformulación de la hipótesis (sección 6.8 del
+documento integrado). Lo que cambia en el paquete:
+
+**El ΔR² se calcula en sus dos formas.** `compare.delta_r2` devuelve el total y
+el parcial:
+
+    parcial = (R² completo - R² base) / (1 - R² base)
+
+Los dos coinciden cuando la línea base no explica nada. En el dominio vocal el
+sexo explica hasta el 74 % de algunos parámetros, y ahí el total queda
+comprimido por el factor (1 - R² base) aunque la heredabilidad sea la misma.
+Como las tres fuentes estiman sus heredabilidades netas de covariables, el
+parcial es la medida comparable con el nivel declarado, y es la que usan los
+criterios. El total se informa al lado.
+
+**Ningún contraste entre dominios se afirma.** `comparar` ya no devuelve
+`hipotesis_dos_niveles`: devuelve `ordenamiento` y los tres pares con rol
+"informado". El código que leía esa clave va a fallar con KeyError, y está
+bien que falle: el veredicto de la hipótesis ya no sale de ahí.
+
+**Criterio nuevo: recuperación del nivel declarado.** Es la condición que la
+hipótesis puede fallar. El ΔR² parcial recuperado tiene que quedar dentro de
+`TOLERANCIA_RECUPERACION` (0,005) del nivel declarado, evaluado sobre el
+promedio de las 20 réplicas. La tolerancia se fijó por simulación, con las
+personas de prueba fijas entre réplicas y los fenotipos regenerados: el
+desvío absoluto queda por debajo de 0,0043 en el 95 % de los experimentos.
+Sobre una réplica individual la dispersión es cuatro veces mayor, hasta 0,016,
+así que el criterio solo tiene sentido sobre el promedio. La corrida de
+`demo_circuito.py` lo muestra: en el dominio vocal la réplica 0 da un parcial
+de 0,057 y el promedio de las 20 da 0,035, que es el nivel declarado.
+
+**Archivo nuevo del contrato: `recuperacion_<dominio>.csv`.** Una fila por
+réplica, rasgo y línea base, con el nivel declarado del rasgo y el ΔR² total y
+parcial de esa réplica. El nivel declarado sale de la configuración del módulo
+y `verificar_recuperacion` rechaza un archivo donde cambie entre réplicas: si
+cambia, se eligió mirando resultados. Funciones: `fila_recuperacion`,
+`exportar_recuperacion`, `cargar_recuperacion`, `verificar_recuperacion` y
+`criterio_recuperacion`.
+
+**`predictions.verificar` ahora exige las dos líneas base.** Antes aceptaba un
+archivo con una sola, y no debía: parte de la diferencia de ΔR² entre dominios
+vendría de que cada módulo comparó contra otra cosa.
+
+La cohorte 2.0 y su huella no cambian con esta versión.
+
+## Versión 2.0 (1/11/2026): cohorte mixta
+
+Decidida por el grupo el 1/11/2026. Es la cohorte base del trabajo, sin vuelta
+atrás a la 1.1. Se congela el 6/11/2026.
+
+| Cambio | 1.1 | 2.0 |
+|---|---|---|
+| Personas | 2.000 simuladas | **503 reales de 1000 Genomes** (fase 3, panel europeo) + 1.497 simuladas, con los mismos totales por subpoblación |
+| Columnas | `individuo_id, subpoblacion, sexo, edad, particion` | Además `origen` (`1000g` o `simulada`) y `muestra_1000g` (id de la muestra, vacío en las simuladas) |
+| Sexo | Sorteado para quedar 1.000 / 1.000 | Las reales con su sexo real; las simuladas completan hasta 1.000 / 1.000, balanceado dentro de cada subpoblación |
+| Particiones | Estratificadas por subpoblación x sexo | Por subpoblación x sexo x origen: reales 253 / 125 / 125, simuladas 747 / 375 / 375 |
+| Panel | — | `anima_spine/datos/muestras_1000g_eur.csv` (503 filas), preparado con `spine.preparar_panel` desde `integrated_call_samples_v3.20130502.ALL.panel` |
+
+| Subpoblación | Reales | Simuladas | Total |
+|---|---|---|---|
+| CEU | 99 | 295 | 394 |
+| FIN | 99 | 295 | 394 |
+| GBR | 91 | 271 | 362 |
+| IBS | 107 | 318 | 425 |
+| TSI | 107 | 318 | 425 |
+
+**Los rasgos siguen siendo simulados para todas las personas**: 1000 Genomes
+no informa voz, cara ni personalidad. Lo real de las 503 es su subpoblación,
+su sexo y su genoma. Cada módulo decide si usa variantes publicadas leídas del
+genoma real (parte genética "conocida") y completa el resto simulado hasta la
+heredabilidad del rasgo; Temperamento deja toda su parte genética simulada.
+
+`spine.cargar` lee también los archivos de la 1.1 (sin las columnas nuevas,
+todas las personas quedan como simuladas). La 1.1 queda en `historico/`.
 
 ## Versión 1.1 (22/10/2026)
 
@@ -186,6 +303,10 @@ informa con su intervalo, pero no se afirma.
   módulo y también es un supuesto.
 - Los tamaños de subpoblación son los del panel europeo de 1000G (fase 3),
   usados como proporciones. Verificados contra Ensembl: 99, 91, 99, 107 y 107.
-- De 1000 Genomes solo se toman esas proporciones: la cohorte no contiene
-  genotipos. La sección 4.4.4 del documento integrado tiene que decirlo así.
-- Sexo balanceado por diseño (0 = mujer, 1 = hombre).
+- Desde la 2.0, la cohorte incluye a las 503 personas europeas de 1000
+  Genomes con su subpoblación, su sexo y el identificador de su muestra, que
+  permite leer su genoma. Las 1.497 restantes son simuladas.
+- El fenotipo de todas las personas, reales o simuladas, es simulado. El
+  documento integrado tiene que decirlo explícitamente.
+- Sexo balanceado por diseño (0 = mujer, 1 = hombre), contando el sexo real
+  de las 503 personas de 1000 Genomes.

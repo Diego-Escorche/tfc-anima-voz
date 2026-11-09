@@ -18,7 +18,21 @@ números aleatorios de numpy no garantiza la misma secuencia en todas sus
 versiones. Por eso los metadatos guardan la huella SHA-256 del CSV y la
 versión de numpy con la que se generó, y `cargar` verifica la huella.
 
-Cambios de la versión 1.1 respecto de la 1.0 (ver README):
+Cambios de la versión 2.0 respecto de la 1.1 (ver README):
+  - la cohorte es mixta: incluye a las 503 personas europeas reales de
+    1000 Genomes (fase 3), con su subpoblación y su sexo reales, y se
+    completa con personas simuladas hasta los mismos totales por
+    subpoblación que la 1.1;
+  - columnas nuevas: `origen` ("1000g" o "simulada") y `muestra_1000g`
+    (el identificador de la muestra, vacío en las simuladas);
+  - las particiones se estratifican además por origen, así las personas
+    reales quedan repartidas en los tres grupos;
+  - el listado de las 503 personas viaja con el paquete
+    (`datos/muestras_1000g_eur.csv`) y su huella va en los metadatos.
+  Los rasgos (voz, cara, personalidad) siguen siendo simulados: 1000
+  Genomes no informa ninguno.
+
+Cambios de la versión 1.1 respecto de la 1.0:
   - conteos exactos por subpoblación (antes se sorteaban);
   - sexo balanceado y codificado: 0 = mujer, 1 = hombre;
   - particiones estratificadas por subpoblación y sexo;
@@ -37,7 +51,7 @@ from pathlib import Path
 
 import numpy as np
 
-VERSION = "1.1"
+VERSION = "2.0"
 SEMILLA = 20261019
 
 # Tamaños del panel europeo de 1000 Genomes (fase 3), usados como
@@ -56,7 +70,17 @@ PARTICIONES = {"entrenamiento": 0.50, "calibracion": 0.25, "prueba": 0.25}
 # Rango de edad común a los tres módulos. Ver README, "Rango de edad".
 RANGO_EDAD = (18, 80)
 
-CAMPOS = ("individuo_id", "subpoblacion", "sexo", "edad", "particion")
+CAMPOS = (
+    "individuo_id", "subpoblacion", "sexo", "edad", "particion", "origen", "muestra_1000g",
+)
+
+# Origen de cada persona de la cohorte.
+ORIGENES = ("1000g", "simulada")
+
+# Listado de las personas reales que viaja con el paquete. Se prepara una
+# sola vez desde el panel público de 1000 Genomes con `preparar_panel`.
+PANEL_PAQUETE = Path(__file__).resolve().parent / "datos" / "muestras_1000g_eur.csv"
+CAMPOS_PANEL = ("muestra_1000g", "subpoblacion", "sexo")
 
 
 @dataclass(frozen=True)
@@ -119,7 +143,73 @@ def _asignacion_sistematica(n: int, proporciones: dict[str, float]) -> list[str]
     return salida
 
 
-def generar(n: int = 2000, semilla: int = SEMILLA) -> Spine:
+def preparar_panel(ruta_panel_1000g: str | Path, destino: str | Path = PANEL_PAQUETE) -> Path:
+    """Extrae del panel público de 1000 Genomes las 503 personas europeas.
+
+    El panel es `integrated_call_samples_v3.20130502.ALL.panel` (fase 3):
+    texto separado por tabuladores, con las columnas sample, pop,
+    super_pop y gender. Se queda con las cinco subpoblaciones de
+    SUBPOBLACIONES, codifica el sexo como 0 = mujer y 1 = hombre, y
+    verifica que los conteos coincidan con el panel europeo publicado.
+    """
+    filas = []
+    with Path(ruta_panel_1000g).open(encoding="utf-8") as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            pop = (r.get("pop") or "").strip()
+            if pop not in SUBPOBLACIONES:
+                continue
+            genero = (r.get("gender") or "").strip().lower()
+            if genero not in ("female", "male"):
+                raise AssertionError(f"{r.get('sample')}: sexo desconocido {genero!r}")
+            filas.append({
+                "muestra_1000g": r["sample"].strip(),
+                "subpoblacion": pop,
+                "sexo": 0 if genero == "female" else 1,
+            })
+    filas.sort(key=lambda f: f["muestra_1000g"])
+    _validar_panel(filas)
+    destino = Path(destino)
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    with destino.open("w", newline="", encoding="utf-8") as fh:
+        escritor = csv.DictWriter(fh, fieldnames=CAMPOS_PANEL, lineterminator="\n")
+        escritor.writeheader()
+        escritor.writerows(filas)
+    return destino
+
+
+def cargar_panel(ruta: str | Path = PANEL_PAQUETE) -> list[dict]:
+    """Lee el listado de personas reales que usa `generar`."""
+    if not Path(ruta).exists():
+        raise FileNotFoundError(
+            f"falta {ruta}: se prepara una sola vez con preparar_panel(<panel de 1000 Genomes>). "
+            "El panel es integrated_call_samples_v3.20130502.ALL.panel, de la fase 3."
+        )
+    with Path(ruta).open(encoding="utf-8") as fh:
+        filas = [
+            {"muestra_1000g": r["muestra_1000g"], "subpoblacion": r["subpoblacion"], "sexo": int(r["sexo"])}
+            for r in csv.DictReader(fh)
+        ]
+    _validar_panel(filas)
+    return filas
+
+
+def _validar_panel(filas: list[dict]) -> None:
+    conteo = {k: 0 for k in SUBPOBLACIONES}
+    for f in filas:
+        conteo[f["subpoblacion"]] += 1
+    if conteo != SUBPOBLACIONES:
+        raise AssertionError(
+            f"el panel no coincide con el panel europeo de 1000 Genomes: {conteo}, "
+            f"se esperaba {SUBPOBLACIONES}"
+        )
+    muestras = [f["muestra_1000g"] for f in filas]
+    if len(set(muestras)) != len(muestras) or any(not m for m in muestras):
+        raise AssertionError("el panel tiene muestras repetidas o vacías")
+    if {f["sexo"] for f in filas} - set(SEXO):
+        raise AssertionError("el panel tiene valores de sexo distintos de 0 y 1")
+
+
+def generar(n: int = 2000, semilla: int = SEMILLA, panel: list[dict] | None = None) -> Spine:
     """Genera la cohorte compartida.
 
     Args:
@@ -134,9 +224,22 @@ def generar(n: int = 2000, semilla: int = SEMILLA) -> Spine:
     # 1. Subpoblación: conteos exactos proporcionales al panel.
     conteos = _mayor_resto(n, SUBPOBLACIONES)
 
-    # 2. Sexo: mitad y mitad dentro de cada subpoblación. En las impares, el
-    #    individuo sobrante alterna entre mujer y hombre para que el total
-    #    quede balanceado.
+    # 2. Personas reales de 1000 Genomes, con su subpoblación y su sexo.
+    if panel is None:
+        panel = cargar_panel()
+    else:
+        _validar_panel(panel)
+    reales = sorted(panel, key=lambda f: f["muestra_1000g"])
+    for subpob, n_k in conteos.items():
+        n_real = sum(1 for f in reales if f["subpoblacion"] == subpob)
+        if n_real > n_k:
+            raise ValueError(
+                f"con n = {n}, {subpob} tiene lugar para {n_k} personas y hay {n_real} reales"
+            )
+
+    # 3. Sexo: mitad y mitad dentro de cada subpoblación, contando a las
+    #    reales. En las impares, el individuo sobrante alterna entre mujer y
+    #    hombre. Las simuladas completan lo que falta de cada sexo.
     filas = []
     impar = 0
     for subpob, n_k in conteos.items():
@@ -144,27 +247,34 @@ def generar(n: int = 2000, semilla: int = SEMILLA) -> Spine:
         if n_k % 2:
             mujeres += 1 if impar % 2 == 0 else 0
             impar += 1
-        sexos = [0] * mujeres + [1] * (n_k - mujeres)
-        for s in sexos:
-            filas.append({"subpoblacion": subpob, "sexo": s})
+        propias = [f for f in reales if f["subpoblacion"] == subpob]
+        for f in propias:
+            filas.append({"subpoblacion": subpob, "sexo": f["sexo"],
+                          "origen": "1000g", "muestra_1000g": f["muestra_1000g"]})
+        mujeres_sim = max(0, mujeres - sum(1 for f in propias if f["sexo"] == 0))
+        n_sim = n_k - len(propias)
+        mujeres_sim = min(mujeres_sim, n_sim)
+        for s_ in [0] * mujeres_sim + [1] * (n_sim - mujeres_sim):
+            filas.append({"subpoblacion": subpob, "sexo": s_,
+                          "origen": "simulada", "muestra_1000g": ""})
 
-    # 3. Edad: entera y uniforme en el rango declarado, independiente del resto.
+    # 4. Edad: entera y uniforme en el rango declarado, independiente del resto.
     edades = rng.integers(RANGO_EDAD[0], RANGO_EDAD[1] + 1, size=n)
     for f, e in zip(filas, edades):
         f["edad"] = int(e)
 
-    # 4. Partición estratificada: se ordena por estrato (subpoblación, sexo) y
-    #    al azar dentro del estrato, y se asigna en forma sistemática.
+    # 5. Partición estratificada: se ordena por estrato (subpoblación, sexo,
+    #    origen) y al azar dentro del estrato, y se asigna en forma sistemática.
     azar = rng.random(n)
     orden = sorted(
         range(n),
-        key=lambda i: (filas[i]["subpoblacion"], filas[i]["sexo"], azar[i]),
+        key=lambda i: (filas[i]["subpoblacion"], filas[i]["sexo"], filas[i]["origen"], azar[i]),
     )
     etiquetas = _asignacion_sistematica(n, PARTICIONES)
     for pos, i in enumerate(orden):
         filas[i]["particion"] = etiquetas[pos]
 
-    # 5. Orden final al azar e identificadores del 1 al n.
+    # 6. Orden final al azar e identificadores del 1 al n.
     filas = [filas[i] for i in rng.permutation(n)]
     filas = [
         {
@@ -173,6 +283,8 @@ def generar(n: int = 2000, semilla: int = SEMILLA) -> Spine:
             "sexo": f["sexo"],
             "edad": f["edad"],
             "particion": f["particion"],
+            "origen": f["origen"],
+            "muestra_1000g": f["muestra_1000g"],
         }
         for k, f in enumerate(filas)
     ]
@@ -189,7 +301,20 @@ def generar(n: int = 2000, semilla: int = SEMILLA) -> Spine:
         },
         "particiones": PARTICIONES,
         "conteos_particion": _mayor_resto(n, PARTICIONES),
-        "estratificacion": "subpoblacion x sexo",
+        "estratificacion": "subpoblacion x sexo x origen",
+        "origenes": list(ORIGENES),
+        "conteos_origen": {o: sum(1 for f in filas if f["origen"] == o) for o in ORIGENES},
+        "conteos_origen_particion": {
+            o: {p: sum(1 for f in filas if f["origen"] == o and f["particion"] == p) for p in PARTICIONES}
+            for o in ORIGENES
+        },
+        "panel_1000g": {
+            "fuente": "1000 Genomes fase 3, integrated_call_samples_v3.20130502.ALL.panel",
+            "personas": len(reales),
+            "sha256_listado": hashlib.sha256(
+                "\n".join(f"{f['muestra_1000g']},{f['subpoblacion']},{f['sexo']}" for f in reales).encode("utf-8")
+            ).hexdigest(),
+        },
         "rango_edad": list(RANGO_EDAD),
         "distribucion_edad": "uniforme entera",
         "numpy_version": np.__version__,
@@ -199,10 +324,13 @@ def generar(n: int = 2000, semilla: int = SEMILLA) -> Spine:
             "Es un supuesto de diseño común a los tres módulos, no un dato.",
             "El efecto de edad, sexo y ancestría sobre cada fenotipo lo define "
             "cada módulo y debe documentarse como supuesto.",
-            "De 1000 Genomes solo se toman las proporciones de las cinco "
-            "subpoblaciones europeas; la cohorte no contiene genotipos.",
-            "Sexo balanceado (1000/1000) por diseño; las poblaciones fuente "
-            "no están necesariamente balanceadas.",
+            "La cohorte es mixta: las 503 personas europeas de 1000 Genomes "
+            "son reales en subpoblación, sexo y genoma; el resto son simuladas, "
+            "con los mismos totales por subpoblación que la versión 1.1.",
+            "Los rasgos de todas las personas, reales o simuladas, son "
+            "simulados: 1000 Genomes no informa voz, cara ni personalidad.",
+            "Sexo balanceado dentro de cada subpoblación contando a las "
+            "personas reales; las simuladas completan lo que falta.",
         ],
     }
     return Spine(filas=filas, meta=meta)
@@ -255,6 +383,8 @@ def cargar(ruta: str | Path = "cohorte_anima.csv") -> Spine:
                 "sexo": int(r["sexo"]),
                 "edad": int(r["edad"]),
                 "particion": r["particion"],
+                "origen": r.get("origen") or "simulada",
+                "muestra_1000g": r.get("muestra_1000g") or "",
             }
             for r in csv.DictReader(fh)
         ]
@@ -281,6 +411,20 @@ def verificar(spine: Spine) -> None:
     if any(not RANGO_EDAD[0] <= f["edad"] <= RANGO_EDAD[1] for f in spine.filas):
         raise AssertionError("hay edades fuera del rango declarado")
 
+    if {f.get("origen", "simulada") for f in spine.filas} - set(ORIGENES):
+        raise AssertionError(f"hay valores de origen distintos de {ORIGENES}")
+    muestras = [f.get("muestra_1000g", "") for f in spine.filas if f.get("origen") == "1000g"]
+    if any(not m for m in muestras) or len(set(muestras)) != len(muestras):
+        raise AssertionError("hay personas reales sin muestra de 1000 Genomes o con muestras repetidas")
+    if any(f.get("muestra_1000g") for f in spine.filas if f.get("origen", "simulada") == "simulada"):
+        raise AssertionError("hay personas simuladas con muestra de 1000 Genomes")
+    if "conteos_origen" in spine.meta:
+        conteo_origen = {o: sum(1 for f in spine.filas if f.get("origen") == o) for o in ORIGENES}
+        if conteo_origen != spine.meta["conteos_origen"]:
+            raise AssertionError(
+                f"conteos por origen {conteo_origen}, los metadatos dicen {spine.meta['conteos_origen']}"
+            )
+
     conteo: dict[str, int] = {}
     for f in spine.filas:
         conteo[f["particion"]] = conteo.get(f["particion"], 0) + 1
@@ -295,7 +439,8 @@ if __name__ == "__main__":
     spine = generar()
     verificar(spine)
     csv_path, json_path = exportar(spine)
-    print(f"Cohorte {VERSION} generada: {len(spine.filas)} individuos")
+    print(f"Cohorte {VERSION} generada: {len(spine.filas)} individuos "
+          f"({spine.meta['conteos_origen']['1000g']} de 1000 Genomes)")
     for etiqueta in PARTICIONES:
         print(f"  {etiqueta:>14}: {len(spine.ids(etiqueta))}")
     print(f"\n{csv_path}\n{json_path}\nSHA-256: {huella(csv_path)}")
