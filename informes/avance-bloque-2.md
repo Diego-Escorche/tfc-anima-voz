@@ -69,6 +69,8 @@ Además: respuestas al avance del 29/10 (el oráculo pasa a `fenotipo.py`), comm
 
 ### Punto 5: archivo para la capa de calibración
 
+Esta tabla describe la **primera versión** del archivo, la de antes del punto 7. La vigente, con la misma forma y otra huella, está en "Punto 7".
+
 | Dato | Valor |
 |---|---|
 | Archivo | `informes/voz_para_calibracion.csv` (15 MB, fuera de git) y `informes/voz_para_calibracion.meta.json` (en git) |
@@ -76,9 +78,9 @@ Además: respuestas al avance del 29/10 (el oráculo pasa a `fenotipo.py`), comm
 | Columnas | `replica, semilla, dominio, sexo, individuo_id, particion, rasgo, y_real, mu_oraculo, sigma_oraculo` |
 | Semilla | 20261019 + réplica |
 | Nivel declarado | Caso base, configuración 1.2, composición verificada |
-| Puntaje genético | Enteramente simulado, también en las 503 personas reales. Se regenera cuando entre el punto 7 |
+| Puntaje genético | Enteramente simulado, también en las 503 personas reales. Con el punto 7 se regeneró: ver "Nuevo `voz_para_calibracion.csv`" |
 | Validación | OK: una fila por (individuo_id, rasgo, réplica), las 20 réplicas, la semilla de cada una, `dominio` = `voz`, ids, particiones y sexo iguales a los de la cohorte, valores finitos y `sigma_oraculo` > 0 |
-| Huella SHA-256 | `b6f8d2d8867cf2f8a87945ac075558104315c508740b5c9400e7683db7631941` |
+| Huella SHA-256 | `b6f8d2d8867cf2f8a87945ac075558104315c508740b5c9400e7683db7631941` (primera versión; la vigente es `16ad6332…`) |
 | Regeneración desde un clon limpio | **Idéntica byte a byte** (misma huella), con anima_spine 2.2, numpy 2.5.4, pandas 3.0.6 y Python 3.12.4. Las versiones quedan en el `.meta.json` |
 
 El CSV no cambió con las versiones 1.1 y 1.2 de la configuración, porque el caso base es el mismo. Sólo se actualizó su `.meta.json`.
@@ -157,7 +159,7 @@ Var(g_conocida) en los otros dos parámetros, en la cohorte 2.0: f2 0,00344 (dec
 | α de la binaria | log 1,5 = 0,405 | 0,381 | 0,05 |
 | β (constante, binaria, continua) | 0,5 / −1,0 / 0,3 | 0,511 / −1,016 / 0,291 | 0,05 |
 
-`lineas_base.py`, con los valores de prueba de la Etapa 2 (d = −2, r = 0,8, c = 0,1, b_mujer = −0,3, b_hombre = 0,1, q_mujer = 0,2, q_hombre = 0,4) y 200.000 personas. Error máximo sobre los 8 parámetros:
+`lineas_base.py`, con los valores de prueba de la Etapa 2 (d = −2, r = 0,8, c = 0,1, b_mujer = −0,3, b_hombre = 0,1, q_mujer = 0,2, q_hombre = 0,4) y 200.000 personas. Error máximo sobre los 8 parámetros, medido otra vez después del punto 7 (cambiaron f0_medio, f1 y f2):
 
 | Qué | Pedido | Error máximo | Tolerancia |
 |---|---|---|---|
@@ -165,13 +167,13 @@ Var(g_conocida) en los otros dos parámetros, en la cohorte 2.0: f2 0,00344 (dec
 | Línea base 2, dispersión: constante, sexo y edad | 0, log r, c | 0,0051 | 0,03 |
 | Completo, dispersión: sexo y edad | log r, c | 0,0044 | 0,03 |
 | Completo, α₀ | ½ · log(1 − h²) | 0,0036 | 0,02 |
-| Completo con c = 0, coeficiente de g | 1 | 0,0203 | 0,03 |
-| Completo con c = 0, coeficiente de g · sexo | r − 1 = −0,2 | 0,0213 | 0,03 |
+| Completo con c = 0, coeficiente de g | 1 | 0,0212 | 0,03 |
+| Completo con c = 0, coeficiente de g · sexo | r − 1 = −0,2 | 0,0174 | 0,03 |
 | Completo con g permutado, coeficiente de g | 0 | 0,0184 | 0,02 |
 
 ## Convergencia del optimizador
 
-Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converger.
+Máximo de iteraciones sobre los 8 parámetros, medido después del punto 7. Ningún ajuste dejó de converger.
 
 | Modelo | Valores de prueba, 200.000 personas | Efectos reales, cohorte 2.0 (1.000 de entrenamiento), réplica 0 |
 |---|---|---|
@@ -181,7 +183,7 @@ Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converge
 
 `solo intercepto` termina en 0 iteraciones porque el punto de partida ya es su máximo de verosimilitud: la media y el desvío de la muestra.
 
-**Coeficiente de g · edad_c con los efectos reales** (c = 0, así que tiene que dar cerca de 0): f0_medio 0,002, f0_variabilidad 0,065, jitter −0,123, hnr −0,029, f1 −0,045, f2 −0,054, f3 0,030, vtl −0,037. Con 1.000 personas de entrenamiento, su error típico calculado es de alrededor de 0,08 en los parámetros de h² más baja. Todos son compatibles con cero; el mayor, jitter, queda a 1,6 errores típicos.
+**Coeficiente de g · edad_c con los efectos reales** (c = 0, así que tiene que dar cerca de 0): f0_medio 0,016, f0_variabilidad 0,065, jitter −0,123, hnr −0,029, f1 −0,043, f2 −0,059, f3 0,030, vtl −0,037. Con 1.000 personas de entrenamiento, su error típico calculado es de alrededor de 0,08 en los parámetros de h² más baja. Todos son compatibles con cero; el mayor, jitter, queda a 1,6 errores típicos.
 
 ## Decisiones consultadas
 
@@ -203,7 +205,6 @@ Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converge
 
 - **Decisión tomada sin consultar (punto 7): en cada réplica se vuelven a sortear las copias de las personas simuladas.** Las de las reales son siempre las del archivo. La entrega no lo dice. Lo resolví así porque cada réplica regenera todo lo que depende del azar del módulo, como pide el paquete. Si se prefiere que las simuladas tengan un genotipo fijo, como si fueran personas con genoma, es un cambio de pocas líneas: sortearlas con una semilla que no dependa de la réplica.
 - **Cambié la tolerancia de un test que había escrito yo**, `test_columna_g_elige_el_puntaje_del_completo`, de 10⁻⁴ a 10⁻³. Con la g nueva, duplicar g dejó el coeficiente en la mitad con un error relativo de 2·10⁻⁴. Diagnóstico: con un criterio de parada más estricto en L-BFGS-B (ftol = 10⁻¹⁵), el error baja a 6·10⁻⁸, así que es la precisión con la que se detiene el optimizador. Equivale a unos 0,0003 en el coeficiente, mucho menos que su error típico (alrededor de 0,08). No es una tolerancia del brief.
-
 - **`ajustar` devuelve un objeto que guarda las iteraciones.** El brief dice que devuelve β y α; el objeto se desempaqueta así, como pide el brief. Hacía falta porque este informe tiene que reportar las iteraciones. También acepta `max_iteraciones`, que usa el test de no convergencia.
 - **`ajustar` controla que la primera columna de `X_sigma` sea la constante**, porque el punto de partida pone ahí el logaritmo del desvío.
 - **`lineas_base.py` se hizo en la semana del 9/11**, junto con `modelo.py`, como parte del punto 6. El plan del 29/10 lo ponía en la semana del 10/11.
@@ -216,18 +217,18 @@ Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converge
 
    | Parámetro | h² | Coeficiente con la semilla del test | Desvío entre permutaciones | Permutaciones con \|coef\| > 0,02 |
    |---|---|---|---|---|
-   | f0_medio | 0,1027 | −0,0087 | 0,0111 | 10 % |
+   | f0_medio | 0,1027 | −0,0065 | 0,0106 | 5 % |
    | f0_variabilidad | 0,0410 | +0,0071 | 0,0188 | 30 % |
    | jitter | 0,0500 | −0,0169 | 0,0142 | 15 % |
    | hnr | 0,0500 | −0,0068 | 0,0140 | 15 % |
-   | f1 | 0,0619 | −0,0007 | 0,0132 | 12 % |
-   | f2 | 0,1353 | +0,0032 | 0,0113 | 8 % |
+   | f1 | 0,0619 | +0,0036 | 0,0131 | 8 % |
+   | f2 | 0,1353 | +0,0005 | 0,0115 | 5 % |
    | f3 | 0,0644 | +0,0081 | 0,0113 | 10 % |
    | vtl | 0,0606 | +0,0184 | 0,0132 | 18 % |
 
-   La tolerancia de 0,02 queda entre 1 y 1,8 desvíos. Un modelo correcto falla en algún parámetro con la mayoría de las permutaciones posibles. El desvío es alto porque las interacciones g · sexo y g · edad_c le restan precisión al coeficiente de g.
+   Valores medidos con el generador del punto 7. La tolerancia de 0,02 queda entre 1 y 1,9 desvíos, y con 8 parámetros, un modelo correcto falla en alguno con la mayoría de las permutaciones posibles. El desvío es alto porque las interacciones g · sexo y g · edad_c le restan precisión al coeficiente de g.
 
-   El test con c = 0 tiene el mismo problema, aunque más chico: el coeficiente de g tiene un desvío del mismo orden, y su tolerancia de 0,03 queda en 1,6 a 2,7 desvíos (el error medido fue 0,0203).
+   El test con c = 0 tiene el mismo problema, aunque más chico: el coeficiente de g tiene un desvío del mismo orden, y su tolerancia de 0,03 queda en 1,6 a 2,8 desvíos (el error medido fue 0,0212).
 
    No cambié la tolerancia. Hay tres alternativas para que decida el manager:
    - (a) fijar la tolerancia en desvíos, por ejemplo 4 desvíos, que da entre 0,045 y 0,075;
@@ -248,11 +249,15 @@ Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converge
 
 4. **Los puntos 8 y 9 necesitan piezas que el plan del 29/10 ponía en la semana del 17/11:** `replicas.py` (tabla predictiva y réplicas) y las funciones de ΔR² de `metricas.py`. Con el orden de la entrega, las adelanto a esta semana como parte del punto 8. Si se prefiere mantener el calendario anterior, el punto 8 pasa a la semana del 17/11.
 
-5. **Pendiente de Diego, ya anotado:**
+5. **Confirmar una decisión del punto 7, tomada sin consultar:** en cada réplica se vuelven a sortear los genotipos de las personas simuladas; los de las reales son siempre los del archivo (ver "Desvíos"). No frena el punto 8.
+   - Si se confirma, no hay nada que cambiar.
+   - Si se prefiere que las simuladas tengan un genotipo fijo, es un cambio chico, pero cambia el CSV para Tomás.
+
+6. **Pendiente de Diego, ya anotado:**
    - verificar contra el artículo las cifras atribuidas a Campos et al. (0,374, 0,366 y los dos intervalos) y las iniciales de la primera autora;
    - la nota de jitter y HNR en el Anexo B del integrado y en el individual;
    - los porcentajes que se mueven: 0,61 % en f0_medio y 0,23 % en f1.
 
 ## Siguiente paso
 
-Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Necesita las preguntas abiertas 2, 3 y 4, y conviene responderlas antes de arrancar.
+Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Para arrancarlo necesito respuesta a las preguntas abiertas 2, 3 y 4. La 1 y la 5 no lo frenan.
