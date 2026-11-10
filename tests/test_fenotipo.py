@@ -92,7 +92,7 @@ def columna(fenotipos, rasgo, campo):
 
 
 def test_formato_largo(cohorte_grande, fenotipos):
-    assert list(fenotipos.columns) == ["individuo_id", "rasgo", "g", "e", "y"]
+    assert list(fenotipos.columns) == ["individuo_id", "rasgo", "g", "g_conocida", "e", "y"]
     assert len(fenotipos) == N * len(PARAMETROS)
     for p in PARAMETROS:
         assert np.array_equal(columna(fenotipos, p.nombre, "individuo_id"),

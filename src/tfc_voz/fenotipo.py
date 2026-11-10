@@ -12,10 +12,21 @@ residual). Escala: desvios del logaritmo en mujeres (hnr: desvios de dB).
 Cada parametro usa su propio generador, default_rng([semilla, indice]), con
 un indice FIJO por nombre: agregar o reordenar parametros no cambia los
 valores de los demas (decision de Diego, 23/10).
+
+El puntaje genetico es g = g_conocida + g_resto (punto 7 de la entrega del
+9/11; ver variantes.py): g_conocida sale de las variantes publicadas en los
+parametros que tienen una, y g_resto ~ N(0, h2 - V), con V el segundo nivel
+declarado, asi Var(g) = h2. En los parametros sin variante V = 0 y g es la
+de siempre. Del generador de cada parametro salen, en este orden, g_resto, e
+y las copias sorteadas de las personas simuladas: e no depende de V.
+En cada replica se sortean de nuevo las copias de las personas simuladas;
+las de las reales son siempre las del archivo de genotipos.
 """
 
 import numpy as np
 import pandas as pd
+
+from tfc_voz import variantes as _variantes
 
 # Indice de cada parametro para su generador. Un parametro nuevo recibe el
 # numero siguiente; nunca se renumera.
@@ -55,28 +66,47 @@ def media_y_escala(efecto, sexo, edad, subpoblacion):
     return m, s
 
 
-def generar_fenotipos(cohorte, parametros, efectos, semilla):
-    """g, e e y por persona y parametro, en formato largo.
+def generar_fenotipos(cohorte, parametros, efectos, semilla, niveles=None, genotipos=None):
+    """g (y su parte conocida), e e y por persona y parametro, en formato largo.
 
     cohorte: DataFrame de cohorte.py (individuo_id, subpoblacion, sexo, edad, ...).
     parametros: lista de ParametroAcustico (nombre y heredabilidad).
     efectos: {nombre: EfectosPoblacionales}.
-    Devuelve un DataFrame con individuo_id, rasgo, g, e e y.
+    niveles: NivelesDeclarados con las variantes y el segundo nivel (V); por
+    defecto, los de la configuracion.
+    genotipos: copias de las personas reales (variantes.cargar_genotipos); por
+    defecto se leen de datos/ si hacen falta, verificando la alineacion.
+    Devuelve un DataFrame con individuo_id, rasgo, g, g_conocida, e e y.
     """
+    if niveles is None:
+        from tfc_voz.parametros import NIVELES as niveles
+    segundo = niveles.de("segundo_nivel")
+    con_variante = [v for v in niveles.variantes if v.parametro in {p.nombre for p in parametros}]
+    if genotipos is None and con_variante and _variantes.reales(cohorte).any():
+        genotipos = _variantes.cargar_genotipos(niveles.variantes)
+        _variantes.verificar_alineacion(cohorte, genotipos, con_variante)
     n = len(cohorte)
     bloques = []
     for p in parametros:
         if p.nombre not in INDICE_SEMILLA:
             raise KeyError(f"{p.nombre} no tiene indice de semilla: agregarlo a INDICE_SEMILLA")
+        v_conocida = segundo.get(p.nombre, 0.0)
+        if v_conocida > p.heredabilidad:
+            raise ValueError(f"{p.nombre}: la varianza conocida ({v_conocida}) supera la h2 "
+                             f"({p.heredabilidad}); no se usa una varianza negativa")
         rng = np.random.default_rng([semilla, INDICE_SEMILLA[p.nombre]])
-        g = rng.normal(0.0, np.sqrt(p.heredabilidad), n)
+        g_resto = rng.normal(0.0, np.sqrt(p.heredabilidad - v_conocida), n)
         e = rng.normal(0.0, np.sqrt(1.0 - p.heredabilidad), n)
+        g_conocida = _variantes.puntaje_conocido(
+            cohorte, [v for v in con_variante if v.parametro == p.nombre], genotipos, rng)
+        g = g_conocida + g_resto
         m, s = media_y_escala(efectos[p.nombre], cohorte["sexo"].to_numpy(),
                               cohorte["edad"].to_numpy(), cohorte["subpoblacion"].to_numpy())
         bloques.append(pd.DataFrame({
             "individuo_id": cohorte["individuo_id"].to_numpy(),
             "rasgo": p.nombre,
             "g": g,
+            "g_conocida": g_conocida,
             "e": e,
             "y": m + s * (g + e),
         }))

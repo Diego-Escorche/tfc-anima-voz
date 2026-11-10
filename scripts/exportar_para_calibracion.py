@@ -14,10 +14,12 @@ No son predicciones de ningun modelo. Sirven para que la capa de calibracion
 pruebe con datos que tienen la forma real de Voz antes de que exista el modelo.
 El calculo es fenotipo.oraculo, el mismo que usa la tabla predictiva.
 
-Nivel declarado: el caso base. El puntaje genetico es enteramente simulado,
-tambien en las 503 personas reales de 1000 Genomes: cuando entren las
-variantes conocidas (punto 7 de la entrega del 9/11) se regenera, con las
-mismas columnas y otros valores.
+Nivel declarado: el caso base. El puntaje genetico es g = g_conocida +
+g_resto (punto 7 de la entrega del 9/11): en f0_medio, f1 y f2, la parte
+conocida sale de las variantes publicadas, con los genotipos del archivo en
+las 503 personas reales y sorteados en las simuladas. La version anterior
+del archivo (huella b6f8d2d8..., commit 577a0e5) tenia g enteramente
+simulado; esta tiene las mismas columnas y la misma distribucion.
 
 Columnas (respuesta de Diego del 9/11): replica, semilla, dominio y sexo
 primero, en el orden que pidio el responsable de la capa, y despues las que
@@ -54,9 +56,11 @@ COLUMNAS = ["replica", "semilla", "dominio", "sexo",
 PARTICIONES = ("calibracion", "prueba")
 DOMINIO = "voz"
 NIVEL = "caso_base"
-NOTA_PUNTAJE = ("Generado con el puntaje genetico g enteramente simulado, tambien en las 503 personas "
-                "reales de 1000 Genomes. Cuando entren las variantes conocidas (g = g_conocida + g_resto) "
-                "se regenera con las mismas columnas y la misma distribucion, y otros valores.")
+NOTA_PUNTAJE = ("g = g_conocida + g_resto. En f0_medio, f1 y f2, g_conocida sale de las tres variantes "
+                "publicadas (Gisladottir 2023, S8): copias del archivo datos/genotipos_voz_1000g.csv en las "
+                "503 personas reales de 1000 Genomes y sorteadas en las simuladas, centradas por la "
+                "frecuencia de la subpoblacion; g_resto es simulado. En los otros cinco, g es enteramente "
+                "simulado. Reemplaza a la version con g enteramente simulado (huella b6f8d2d8...).")
 
 
 def armar_replica(cohorte, replica, parametros=PARAMETROS, efectos=EFECTOS):

@@ -217,10 +217,12 @@ def test_sin_convergencia_el_error_nombra_parametro_y_modelo(cohorte_real, monke
 def test_columna_g_elige_el_puntaje_del_completo(cohorte_real):
     """El segundo nivel le pasa al completo otra columna (la parte conocida de g).
 
-    Con el doble de g, el coeficiente de g tiene que dar la mitad.
+    Con el doble de g, el coeficiente de g tiene que dar la mitad. La mitad es
+    exacta en el optimo; L-BFGS-B se detiene antes, con un error relativo de
+    2e-4 en este caso (con ftol = 1e-15 da 6e-8), asi que se pide 1e-3.
     """
     fen = generar_fenotipos(cohorte_real, PARAMETROS[:1], EFECTOS, SEMILLA)
     doble = ajustar_modelos(cohorte_real, fen.assign(g_doble=2 * fen["g"]), PARAMETROS[:1], columna_g="g_doble")
     normal = ajustar_modelos(cohorte_real, fen, PARAMETROS[:1])
     assert doble["f0_medio"][COMPLETO].beta[-3] == pytest.approx(normal["f0_medio"][COMPLETO].beta[-3] / 2,
-                                                                  rel=1e-4)
+                                                                  rel=1e-3)

@@ -1,7 +1,7 @@
 {
   "archivo": "voz_para_calibracion.csv",
   "generado": "2026-11-09",
-  "sha256": "b6f8d2d8867cf2f8a87945ac075558104315c508740b5c9400e7683db7631941",
+  "sha256": "16ad6332b03e46dbdf59b8871a2b2de123e1570e73837bcc42611052388a7a33",
   "filas": 160000,
   "columnas": [
     "replica",
@@ -70,6 +70,6 @@
       "vtl": 0.0606
     }
   },
-  "puntaje_genetico": "Generado con el puntaje genetico g enteramente simulado, tambien en las 503 personas reales de 1000 Genomes. Cuando entren las variantes conocidas (g = g_conocida + g_resto) se regenera con las mismas columnas y la misma distribucion, y otros valores.",
+  "puntaje_genetico": "g = g_conocida + g_resto. En f0_medio, f1 y f2, g_conocida sale de las tres variantes publicadas (Gisladottir 2023, S8): copias del archivo datos/genotipos_voz_1000g.csv en las 503 personas reales de 1000 Genomes y sorteadas en las simuladas, centradas por la frecuencia de la subpoblacion; g_resto es simulado. En los otros cinco, g es enteramente simulado. Reemplaza a la version con g enteramente simulado (huella b6f8d2d8...).",
   "oraculo": "mu_oraculo = m + s * g y sigma_oraculo = s * sqrt(1 - h2): media y desvio verdaderos, conocidos por diseno. No son predicciones de ningun modelo."
 }

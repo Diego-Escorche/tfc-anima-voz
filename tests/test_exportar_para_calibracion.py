@@ -91,7 +91,7 @@ def test_escribe_csv_y_meta(datos, tmp_path):
     assert meta["nivel_declarado"]["valores"] == NIVELES.de("caso_base")
     assert meta["nivel_declarado"]["version"] == NIVELES.version
     assert meta["nivel_declarado"]["fijado"] == NIVELES.fijado
-    assert "enteramente simulado" in meta["puntaje_genetico"]
+    assert "g_conocida" in meta["puntaje_genetico"] and "b6f8d2d8" in meta["puntaje_genetico"]
     assert "\r\n" not in ruta.read_text(encoding="utf-8")[:2000]
 
 
