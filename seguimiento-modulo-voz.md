@@ -37,14 +37,14 @@ Semana del 9/11, en el orden de la entrega de Diego del 9/11 (cada punto habilit
 - [x] 3. Los ocho h² en un único archivo de configuración, `config/niveles_declarados.json`, cargado por `niveles.py`; `parametros.py` ya no tiene literales y `tests/test_niveles.py` falla si un nivel aparece escrito a mano en un `.py` del módulo (9/11)
 - [x] 4. Los dos niveles declarados en esa configuración: caso base (agregado 7,07 %) y segundo nivel por parámetro (V por subpoblación, agregado 0,148 %), los dos como entrada. La composición de la cohorte 2.0 queda registrada al lado; el cargador la verifica y no recalcula. V se calcula una vez con `scripts/calcular_segundo_nivel.py`. `describir` da el renglón del reporte con nivel, archivo, versión, fecha y verificación de la cohorte. Configuración en la versión 1.2 (9/11)
 - [x] 5. `informes/voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas: 160.000 filas, columnas nuevas `replica`, `semilla`, `dominio` y `sexo`; caso base y puntaje genético enteramente simulado, declarado en `voz_para_calibracion.meta.json`. Validación OK. Se regenera cuando entre el punto 7 (9/11)
-- [ ] 6. Etapa 3: el modelo heterocedástico
+- [x] 6. Etapa 3: `modelo.py` (máxima verosimilitud normal, L-BFGS-B con gradiente analítico, error si no converge) y `lineas_base.py` (las dos líneas base y el modelo completo, sólo con entrenamiento). Los 24 modelos convergen sobre la cohorte 2.0, con 42 iteraciones como máximo. Tests de la Etapa 3 y de los ajustes del 29/10 en verde; el de g permutado es frágil (ver `informes/avance-bloque-2.md`) (9/11)
 - [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales (archivo que pasa Diego, en `datos/genotipos_voz_1000g.csv`; no se descarga nada), g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
 - [ ] 8. `recuperacion_voz.csv` y criterio de recuperación (tolerancia 0,015, sobre el caso base)
 - [ ] 9. Análisis de dos niveles
 
 Plan por semanas del 29/10 (se reordena con el brief del 5/11):
-- [ ] Semana del 3/11 (corrida a la del 9/11) — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
-- [ ] Semana del 10/11 — `lineas_base.py`: las dos líneas base y el modelo completo, con los "Ajustes del 29/10" (definiciones compartidas con `fenotipo.py`, test de la línea base 2, test con g permutado)
+- [x] Semana del 3/11 (corrida a la del 9/11; hecha el 9/11) — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
+- [x] Semana del 10/11 (adelantada al 9/11) — `lineas_base.py`: las dos líneas base y el modelo completo, con los "Ajustes del 29/10" (definiciones compartidas con `fenotipo.py`, test de la línea base 2, test con g permutado)
 - [ ] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`, en un archivo nuevo, `replicas.py`, que se suma a la tabla de archivos del README
 - [ ] Semana del 17/11 — Etapa 5: `metricas.py`, sólo funciones y tests (cobertura, ΔR² total y parcial, CRPS, bootstrap pareado); VZ-11 a VZ-13 se corren en diciembre
 - [ ] Semana del 17/11 — control de integración: ΔR² parcial promedio de 20 réplicas a menos de 0,025 de la h² de cada parámetro
