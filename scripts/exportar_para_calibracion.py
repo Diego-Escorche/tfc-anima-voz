@@ -31,6 +31,7 @@ Uso (parado en la raiz del proyecto):
 import argparse
 import hashlib
 import json
+import platform
 import sys
 from datetime import date
 from pathlib import Path
@@ -40,6 +41,7 @@ import pandas as pd
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(RAIZ / "src"), str(RAIZ)]
+import anima_spine  # noqa: E402
 from anima_spine import predictions  # noqa: E402
 from tfc_voz.cohorte import leer_cohorte  # noqa: E402
 from tfc_voz.fenotipo import generar_fenotipos, oraculo  # noqa: E402
@@ -118,7 +120,10 @@ def escribir(datos, ruta, ruta_cohorte):
         "cohorte": {"version": cohorte_meta["version"], "sha256_csv": cohorte_meta["sha256_csv"]},
         "particiones": list(PARTICIONES),
         "replicas": sorted(int(r) for r in datos["replica"].unique()),
+        "semilla_base": SEMILLA,
         "semillas": f"{SEMILLA} + replica",
+        "versiones": {"anima_spine": anima_spine.__version__, "numpy": np.__version__,
+                      "pandas": pd.__version__, "python": platform.python_version()},
         "nivel_declarado": {
             "nivel": NIVEL,
             "descripcion": NIVELES.describir(NIVEL),

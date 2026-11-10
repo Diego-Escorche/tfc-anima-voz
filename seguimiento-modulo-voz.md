@@ -35,10 +35,10 @@ Semana del 9/11, en el orden de la entrega de Diego del 9/11 (cada punto habilit
 - [x] 1. Paquete `anima_spine` 2.2 en el repo, con la cohorte 2.0 (503 personas de 1000 Genomes y 1.497 simuladas; huella `8203824a…`, coincide con los metadatos). Suite del paquete: 43 pasan, 16 salteadas (contrato de módulos que no exportaron) (9/11)
 - [x] 2. Cohorte 1.1 reemplazada por la 2.0 en todo el módulo. `informes/voz_para_calibracion.csv` (hecho sobre la 1.1) retirado por obsoleto; queda en el historial de git (9/11)
 - [x] 3. Los ocho h² en un único archivo de configuración, `config/niveles_declarados.json`, cargado por `niveles.py`; `parametros.py` ya no tiene literales y `tests/test_niveles.py` falla si un nivel aparece escrito a mano en un `.py` del módulo (9/11)
-- [x] 4. Los dos niveles declarados en esa configuración: caso base (agregado 7,07 %) y segundo nivel por parámetro (2pq·β², agregado 0,148 %); `describir` da el renglón del reporte con nivel, archivo, versión y fecha (9/11)
+- [x] 4. Los dos niveles declarados en esa configuración: caso base (agregado 7,07 %) y segundo nivel por parámetro, derivado: V por subpoblación ponderada por la composición de la cohorte, con los valores del JSON como control (tolerancia 0,0002; agregado 0,148 %). `describir` da el renglón del reporte con nivel, archivo, versión y fecha. Configuración en la versión 1.1 (9/11)
 - [x] 5. `informes/voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas: 160.000 filas, columnas nuevas `replica`, `semilla`, `dominio` y `sexo`; caso base y puntaje genético enteramente simulado, declarado en `voz_para_calibracion.meta.json`. Validación OK. Se regenera cuando entre el punto 7 (9/11)
 - [ ] 6. Etapa 3: el modelo heterocedástico
-- [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales (archivo que pasa Diego; no se descarga nada), g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
+- [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales (archivo que pasa Diego, en `datos/genotipos_voz_1000g.csv`; no se descarga nada), g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
 - [ ] 8. `recuperacion_voz.csv` y criterio de recuperación (tolerancia 0,015, sobre el caso base)
 - [ ] 9. Análisis de dos niveles
 
@@ -143,6 +143,13 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **Recuperación:** `recuperacion_voz.csv` con las funciones del paquete, tolerancia de `predictions.TOLERANCIA_RECUPERACION`, sobre el promedio de 20 réplicas y sólo en el caso base.
   - **Dos niveles:** fenotipos siempre con la g completa y el caso base; el modelo recibe la g completa (caso base) o sólo g_conocida (segundo nivel). Se informa el ΔR² parcial con IC y el angostamiento del intervalo, 1 − √(1 − ΔR² parcial).
 
+- **9/11 — Respuestas de Diego, segunda vuelta:**
+  - **Jitter y HNR:** no tienen heredabilidad SNP publicada; el 0,05 es un valor conservador declarado, apoyado en Van Lierde et al. (2005) y Campos et al. (2024). Se cierra como declarado, no como pendiente de verificar. La cita "Lima et al. 2024" era un error: es Campos, Luchesi, Lucci, Otta y Monticelli (2024), *Social Sciences & Humanities Open*, 10, 101062.
+  - **Segundo nivel derivado:** V = Σ w_s · 2 · p_s · (1 − p_s) · β², con la misma p por subpoblación que centra g_conocida y w_s la composición de la cohorte, calculada del archivo al cargar. Con la cohorte 2.0: 0,006086 (f0_medio), 0,003436 (f2), 0,002278 (f1); agregado 0,148 %. Así Var(g) = h² exacto. Con el centrado por subpoblación, en el segundo nivel el ΔR² total y el parcial dan casi lo mismo.
+  - **Test de literales:** recorre también `tests/`, con exención por línea anotada (`# nivel-literal-ok: <motivo>`). Los ceros del segundo nivel quedan fuera.
+  - **CSV de calibración fuera de git:** aprobado, con su `.meta.json` (semilla, versiones, huella) y una regeneración verificada desde un clon limpio.
+  - **Genotipos en `datos/`**, no en `anima_spine/datos/`, para no mezclar datos de Voz con el paquete del grupo.
+
 ## Decisiones pendientes del grupo (bloquean)
 
 - [ ] Con qué criterio se eligen las h² en los tres módulos. Queda vinculado a las decisiones 2 y 3 del documento integrado; Rostro mantiene 7,9 % por ahora
@@ -180,6 +187,8 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 ---
 
 ## Reemplazado el 9/11
+
+- **Niveles declarados 1.0:** el segundo nivel era configurado, calculado con la frecuencia europea promedio (0,006160, 0,003433 y 0,002247). Desde la 1.1 es derivado por subpoblación y esos valores son control.
 
 - **Fase 2:** "Columna vertebral `anima_spine` 1.1 en el repo: `cohorte_anima.csv` v1.1". Desde el 9/11 el paquete es el 2.2 y la cohorte, la 2.0.
 - **Fase 2:** "Oráculo movido a `fenotipo.py`: un test confirma que el CSV regenerado es idéntico al que se le mandó a Tomás". Ese CSV era de la 1.1 y quedó obsoleto; el test se retiró y el archivo se regenera sobre la 2.0 (punto 5 de la entrega).

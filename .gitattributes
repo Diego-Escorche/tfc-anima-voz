@@ -1,3 +1,5 @@
-# La huella SHA-256 de cohorte_anima.csv (en cohorte_anima.meta.json) depende de
-# sus bytes exactos: git no debe convertir sus finales de linea al hacer checkout.
+# Las huellas SHA-256 de cohorte_anima.csv (en cohorte_anima.meta.json) y de
+# datos/genotipos_voz_1000g.csv (en su .meta.json) dependen de sus bytes
+# exactos: git no debe convertir sus finales de linea al hacer checkout.
 cohorte_anima.csv -text
+datos/genotipos_voz_1000g.csv -text

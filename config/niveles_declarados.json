@@ -1,13 +1,17 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "fijado": "2026-11-09",
   "nota": "Niveles declarados del modulo Vocal. Se fijan antes de la primera corrida y no se eligen mirando resultados.",
+  "cambios": {
+    "1.1": "2026-11-09: el segundo nivel pasa a ser derivado (V por subpoblacion, ponderada por la composicion de la cohorte, con la misma p que centra g_conocida). Sus valores escritos aca son control, no entrada. Se corrige la cita de Campos et al. (2024). El caso base no cambia."
+  },
   "fuentes": {
     "caso_base": "Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026",
-    "segundo_nivel": "Gisladottir et al. (2023), Tabla S8, calculado como 2pq*beta^2 con las frecuencias europeas de 1000 Genomes fase 3"
+    "segundo_nivel": "Gisladottir et al. (2023), Tabla S8: suma sobre subpoblaciones de w_s * 2 * p_s * (1 - p_s) * beta^2, con las frecuencias por subpoblacion de 1000 Genomes fase 3 y w_s la fraccion de la cohorte en cada subpoblacion"
   },
   "salvedades": {
-    "jitter_hnr": "jitter y hnr valen los dos 0.0500. No estan en la Tabla S6: es el valor conservador declarado en parametros.py (Van Lierde et al. 2005; Lima et al. 2024). Hay que confirmarlos antes de la entrega final; no se cambian sin decision de Diego."
+    "jitter_hnr": "Jitter y HNR no tienen una heredabilidad SNP publicada: se les asigna un valor conservador de 0,05, apoyado en estudios de gemelos (Van Lierde et al., 2005; Campos et al., 2024). Que los dos valgan exactamente 0,0500 no es un redondeo: es el mismo valor declarado aplicado a dos medidas sobre las que no hay evidencia. Si aparece un GWAS de jitter o HNR, reemplaza al valor conservador y hay que recalcular el agregado del caso base.",
+    "segundo_nivel": "Los valores de segundo_nivel son control: el cargador calcula V desde beta, las frecuencias por subpoblacion y la composicion de la cohorte, y falla si difiere del valor escrito en mas de 0,0002. Los cinco ceros quedan cubiertos por el control del agregado."
   },
   "niveles": {
     "caso_base": {
@@ -15,11 +19,12 @@
       "f1": 0.0619, "f2": 0.1353, "f3": 0.0644, "vtl": 0.0606
     },
     "segundo_nivel": {
-      "f0_medio": 0.006160, "f0_variabilidad": 0.0, "jitter": 0.0, "hnr": 0.0,
-      "f1": 0.002247, "f2": 0.003433, "f3": 0.0, "vtl": 0.0
+      "f0_medio": 0.006086, "f0_variabilidad": 0.0, "jitter": 0.0, "hnr": 0.0,
+      "f1": 0.002278, "f2": 0.003436, "f3": 0.0, "vtl": 0.0
     }
   },
-  "agregados_esperados": { "caso_base": 0.070737, "segundo_nivel": 0.001480 },
+  "tolerancia_control_segundo_nivel": 0.0002,
+  "agregados_esperados": { "caso_base": 0.070737, "segundo_nivel": 0.001475 },
   "variantes": [
     { "rs": "rs11046212", "parametro": "f0_medio", "alelo_efecto": "T",
       "beta": 0.114, "frecuencias": {"CEU": 0.47, "FIN": 0.31, "GBR": 0.40, "IBS": 0.36, "TSI": 0.39} },

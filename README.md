@@ -166,8 +166,8 @@ vocales [i, a, ɔ, u, ɛ], no el máximo entre tareas ni entre vocales sueltas.
 | `f2` | 0.1353 | 0.0655 a 0.2051 | directa | MedianF2_MeasureVowels |
 | `f3` | 0.0644 | −0.0009 a 0.1297 | directa | MedianF3_MeasureVowels |
 | `vtl` | 0.0606 | −0.0090 a 0.1302 | directa | VTL |
-| `jitter` | 0.05 | — | **débil** | No está en la S6 (Van Lierde 2005 / Lima et al. 2024) |
-| `hnr` | 0.05 | — | **débil** | No está en la S6 (Lima et al. 2024) |
+| `jitter` | 0.05 | — | **débil** | No está en la S6 (Van Lierde 2005 / Campos et al. 2024) |
+| `hnr` | 0.05 | — | **débil** | No está en la S6 (Campos et al. 2024) |
 
 Promedio de las 8: **0,0707**. Cuatro intervalos (f0_variabilidad, f1, f3, vtl)
 cruzan el cero. Es lo que reporta la S6, no un error.

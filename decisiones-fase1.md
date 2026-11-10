@@ -16,8 +16,8 @@ el modelo.
 | f2 | Hz | 0.1353 | 0.0655 a 0.2051 | directa | Gisladóttir et al. 2023, S6: MedianF2_MeasureVowels |
 | f3 | Hz | 0.0644 | −0.0009 a 0.1297 | directa | Gisladóttir et al. 2023, S6: MedianF3_MeasureVowels |
 | vtl | cm | 0.0606 | −0.0090 a 0.1302 | directa | Gisladóttir et al. 2023, S6: VTL |
-| jitter | % | 0.05 | — | **débil** | Van Lierde 2005 (n.s.) / Lima et al. 2024 (ICC MZ 0.374) |
-| hnr | dB | 0.05 | — | **débil** | Lima et al. 2024 (ICC MZ 0.366) |
+| jitter | % | 0.05 | — | **débil** | Van Lierde 2005 (n.s.) / Campos et al. 2024 (ICC MZ 0.374) |
+| hnr | dB | 0.05 | — | **débil** | Campos et al. 2024 (ICC MZ 0.366) |
 
 Promedio: **0,0707**. Fuente de la S6: hoja S6_Heritability de
 `abq2969_Tables_S1_to_S11.xlsx`, volcada a
@@ -82,7 +82,8 @@ descartado: el cociente real entre h²-SNP y h² de gemelos es 0.0606 / 0.26 =
 No están en la S6. La literatura de gemelos es chica y contradictoria: Van
 Lierde et al. 2005 (Journal of Voice) explícitamente NO obtuvo correlaciones
 significativas para jitter ni shimmer en gemelos monocigóticos, mientras que
-Lima et al. 2024 (gemelas brasileras) reporta correlaciones intra-par débiles
+Campos et al. 2024 (Social Sciences & Humanities Open, 10, 101062;
+gemelas brasileras) reporta correlaciones intra-par débiles
 pero significativas (ICC 0.374 para jitter, 0.366 para HNR). Ninguno de los dos
 da un h²-SNP.
 

@@ -1,0 +1,86 @@
+{
+  "archivo": "genotipos_voz_1000g.csv",
+  "version": "1.0",
+  "generado": "2026-11-10",
+  "sha256": "352699efd30f47524edbed334bf1e24b0097fcfcd3794ab4ad737da3f684ea01",
+  "personas": 503,
+  "cohorte": "anima 2.0, las 503 personas reales europeas",
+  "procedencia": {
+    "repositorio": "1000 Genomes Project, phase 3 (panel de 2.504 personas)",
+    "via_de_acceso": "Ensembl REST, endpoint GET variation/human/:id?genotypes=1",
+    "ensamblado": "GRCh38",
+    "descargado_por": "Diego Escorche",
+    "fecha_de_descarga": "2026-11-09",
+    "nota": "se descartaron las 505 muestras del panel GGVP que devuelve Ensembl; solo se usan las de 1000GENOMES:phase_3",
+    "fuente_de_los_efectos": "Gisladottir et al. (2023), tabla S8"
+  },
+  "variantes": [
+    {
+      "rs": "rs11046212",
+      "parametro": "f0_medio",
+      "alelo_efecto": "T",
+      "beta": 0.114,
+      "var_class": "SNP",
+      "posicion_grch38": "12:21853182",
+      "frecuencia_config": {
+        "CEU": 0.47,
+        "FIN": 0.31,
+        "GBR": 0.4,
+        "IBS": 0.36,
+        "TSI": 0.39
+      },
+      "frecuencia_observada_1000g": {
+        "CEU": 0.4697,
+        "FIN": 0.3131,
+        "GBR": 0.4011,
+        "IBS": 0.3551,
+        "TSI": 0.3925
+      }
+    },
+    {
+      "rs": "rs369031872",
+      "parametro": "f2",
+      "alelo_efecto": "G",
+      "beta": 0.118,
+      "var_class": "insertion",
+      "posicion_grch38": "8:95962937",
+      "frecuencia_config": {
+        "CEU": 0.14,
+        "FIN": 0.12,
+        "GBR": 0.14,
+        "IBS": 0.17,
+        "TSI": 0.15
+      },
+      "frecuencia_observada_1000g": {
+        "CEU": 0.1364,
+        "FIN": 0.1162,
+        "GBR": 0.1374,
+        "IBS": 0.1682,
+        "TSI": 0.1542
+      }
+    },
+    {
+      "rs": "rs113499791",
+      "parametro": "f1",
+      "alelo_efecto": "ACACACACACACACACACACACACACACACACAC",
+      "beta": 0.219,
+      "var_class": "indel",
+      "posicion_grch38": "1:157992953-157992982",
+      "frecuencia_config": {
+        "CEU": 0.01,
+        "FIN": 0.0,
+        "GBR": 0.02,
+        "IBS": 0.05,
+        "TSI": 0.04
+      },
+      "frecuencia_observada_1000g": {
+        "CEU": 0.0101,
+        "FIN": 0.0,
+        "GBR": 0.0165,
+        "IBS": 0.0467,
+        "TSI": 0.0421
+      }
+    }
+  ],
+  "centrado": "copias - 2*p, con la p de la subpoblacion de la persona"
+}

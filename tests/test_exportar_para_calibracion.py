@@ -73,8 +73,8 @@ def test_sexo_es_el_de_la_cohorte(datos, cohorte):
 def test_el_oraculo_esta_calibrado(datos):
     """(y_real - mu_oraculo) / sigma_oraculo es normal estandar: e / sqrt(1 - h2)."""
     z = (datos["y_real"] - datos["mu_oraculo"]) / datos["sigma_oraculo"]
-    assert abs(z.mean()) < 0.05
-    assert abs(z.std() - 1) < 0.05
+    assert abs(z.mean()) < 0.05  # nivel-literal-ok: tolerancia sobre z, no la h2 de jitter/hnr
+    assert abs(z.std() - 1) < 0.05  # nivel-literal-ok: tolerancia sobre z, no la h2 de jitter/hnr
 
 
 def test_escribe_csv_y_meta(datos, tmp_path):
@@ -85,6 +85,8 @@ def test_escribe_csv_y_meta(datos, tmp_path):
     assert meta["sha256"] == hashlib.sha256(ruta.read_bytes()).hexdigest()
     assert meta["filas"] == 160_000 and meta["replicas"] == list(range(20))
     assert meta["cohorte"]["version"] == "2.0"
+    assert meta["semilla_base"] == SEMILLA
+    assert meta["versiones"]["anima_spine"] == "2.2" and meta["versiones"]["numpy"] == np.__version__
     assert meta["nivel_declarado"]["nivel"] == "caso_base"
     assert meta["nivel_declarado"]["valores"] == NIVELES.de("caso_base")
     assert meta["nivel_declarado"]["version"] == NIVELES.version
