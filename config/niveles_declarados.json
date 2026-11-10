@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "fijado": "2026-11-09",
+  "nota": "Niveles declarados del modulo Vocal. Se fijan antes de la primera corrida y no se eligen mirando resultados.",
+  "fuentes": {
+    "caso_base": "Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026",
+    "segundo_nivel": "Gisladottir et al. (2023), Tabla S8, calculado como 2pq*beta^2 con las frecuencias europeas de 1000 Genomes fase 3"
+  },
+  "salvedades": {
+    "jitter_hnr": "jitter y hnr valen los dos 0.0500. No estan en la Tabla S6: es el valor conservador declarado en parametros.py (Van Lierde et al. 2005; Lima et al. 2024). Hay que confirmarlos antes de la entrega final; no se cambian sin decision de Diego."
+  },
+  "niveles": {
+    "caso_base": {
+      "f0_medio": 0.1027, "f0_variabilidad": 0.0410, "jitter": 0.0500, "hnr": 0.0500,
+      "f1": 0.0619, "f2": 0.1353, "f3": 0.0644, "vtl": 0.0606
+    },
+    "segundo_nivel": {
+      "f0_medio": 0.006160, "f0_variabilidad": 0.0, "jitter": 0.0, "hnr": 0.0,
+      "f1": 0.002247, "f2": 0.003433, "f3": 0.0, "vtl": 0.0
+    }
+  },
+  "agregados_esperados": { "caso_base": 0.070737, "segundo_nivel": 0.001480 },
+  "variantes": [
+    { "rs": "rs11046212", "parametro": "f0_medio", "alelo_efecto": "T",
+      "beta": 0.114, "frecuencias": {"CEU": 0.47, "FIN": 0.31, "GBR": 0.40, "IBS": 0.36, "TSI": 0.39} },
+    { "rs": "rs369031872", "parametro": "f2", "alelo_efecto": "insercion de G",
+      "beta": 0.118, "frecuencias": {"CEU": 0.14, "FIN": 0.12, "GBR": 0.14, "IBS": 0.17, "TSI": 0.15} },
+    { "rs": "rs113499791", "parametro": "f1", "alelo_efecto": "alelo largo, 17 repeticiones AC",
+      "beta": 0.219, "frecuencias": {"CEU": 0.01, "FIN": 0.00, "GBR": 0.02, "IBS": 0.05, "TSI": 0.04} }
+  ]
+}

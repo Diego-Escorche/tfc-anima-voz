@@ -17,9 +17,12 @@ agregada de cinco vocales. Para cada parametro se toma la fila de la S6
 medida sobre el conjunto de las vocales [i, a, o, u, e] (columna Measure
 terminada en _MeasureVowels, o la fila VTL), no el maximo entre tareas ni
 entre vocales sueltas. Los maximos que se usaban antes quedan en
-H2_MAXIMOS, solo para un analisis de sensibilidad. Los valores se cargan
-exactos, sin redondear; tests/test_parametros.py los contrasta contra
-referencias/tabla-s6-heredabilidades.csv.
+H2_MAXIMOS, solo para un analisis de sensibilidad. tests/test_parametros.py
+contrasta las h2 contra referencias/tabla-s6-heredabilidades.csv.
+
+LAS h2 NO SE ESCRIBEN ACA: salen del nivel "caso_base" de
+config/niveles_declarados.json, a traves de niveles.py (entrega del 9/11).
+Ningun .py las escribe a mano; tests/test_niveles.py lo controla.
 
 Cuatro parametros (f0_variabilidad, f1, f3, vtl) tienen un IC95% que cruza
 el cero. Es lo que reporta la S6, no un error de carga.
@@ -41,6 +44,11 @@ aporte genetico de los parametros medidos en gemelos.
 
 from dataclasses import dataclass
 
+from tfc_voz.niveles import cargar
+
+NIVELES = cargar()
+_H2 = NIVELES.de("caso_base")
+
 
 @dataclass(frozen=True)
 class ParametroAcustico:
@@ -56,19 +64,19 @@ class ParametroAcustico:
 
 PARAMETROS = [
     ParametroAcustico(
-        "f0_medio", "Hz", 0.1027, "directa",
+        "f0_medio", "Hz", _H2["f0_medio"], "directa",
         "Gisladottir et al. 2023, Science Advances, tabla S6, fila "
         "MedianF0_MeasureVowels: h2-SNP 10.27% (IC95% 3.4-17.2%)",
         0.033512, 0.171888, "MedianF0_MeasureVowels",
     ),
     ParametroAcustico(
-        "f0_variabilidad", "Hz (SD)", 0.0410, "directa",
+        "f0_variabilidad", "Hz (SD)", _H2["f0_variabilidad"], "directa",
         "Gisladottir et al. 2023, tabla S6, fila StdF0_MeasureVowels: "
         "h2-SNP 4.10% (IC95% -3.0-11.2%)",
         -0.030344, 0.112344, "StdF0_MeasureVowels",
     ),
     ParametroAcustico(
-        "jitter", "%", 0.05, "debil",
+        "jitter", "%", _H2["jitter"], "debil",
         "No esta en la S6. Van Lierde et al. 2005 (J Voice) NO obtuvo "
         "correlacion significativa para jitter en gemelos monocigoticos; "
         "Lima et al. 2024 (gemelas brasileras) reporta ICC intra-par MZ debil "
@@ -77,31 +85,31 @@ PARAMETROS = [
         "medidas acusticas tienen h2-SNP < 5%",
     ),
     ParametroAcustico(
-        "hnr", "dB", 0.05, "debil",
+        "hnr", "dB", _H2["hnr"], "debil",
         "No esta en la S6. Lima et al. 2024 reporta ICC intra-par MZ debil "
         "de 0.366 (IC95% 0.10-0.59) para HNR; sin estimacion de h2-SNP "
         "publicada. Valor conservador, mismo criterio que jitter",
     ),
     ParametroAcustico(
-        "f1", "Hz", 0.0619, "directa",
+        "f1", "Hz", _H2["f1"], "directa",
         "Gisladottir et al. 2023, tabla S6, fila MedianF1_MeasureVowels: "
         "h2-SNP 6.19% (IC95% -0.9-13.3%)",
         -0.009052, 0.132852, "MedianF1_MeasureVowels",
     ),
     ParametroAcustico(
-        "f2", "Hz", 0.1353, "directa",
+        "f2", "Hz", _H2["f2"], "directa",
         "Gisladottir et al. 2023, tabla S6, fila MedianF2_MeasureVowels: "
         "h2-SNP 13.53% (IC95% 6.6-20.5%)",
         0.065524, 0.205076, "MedianF2_MeasureVowels",
     ),
     ParametroAcustico(
-        "f3", "Hz", 0.0644, "directa",
+        "f3", "Hz", _H2["f3"], "directa",
         "Gisladottir et al. 2023, tabla S6, fila MedianF3_MeasureVowels: "
         "h2-SNP 6.44% (IC95% -0.1-13.0%)",
         -0.000868, 0.129668, "MedianF3_MeasureVowels",
     ),
     ParametroAcustico(
-        "vtl", "cm", 0.0606, "directa",
+        "vtl", "cm", _H2["vtl"], "directa",
         "Gisladottir et al. 2023, tabla S6, fila VTL (medida agregada de "
         "F1-F4 sobre las cinco vocales): h2-SNP 6.06% (IC95% -0.9-13.0%). "
         "Reemplaza el 0.13 anterior, que salia de deflacionar a la mitad el "
@@ -110,6 +118,9 @@ PARAMETROS = [
     ),
 ]
 
+if [p.nombre for p in PARAMETROS] != NIVELES.parametros:
+    raise ValueError(f"los parametros de {NIVELES.ruta.name} no coinciden con PARAMETROS")
+
 # Maximos de la S6 que se usaban antes de adoptar la regla agregada.
 # El modelo NO los usa; quedan para un analisis de sensibilidad posterior.
 # VTL no tiene maximo: su valor anterior (0.13) venia de gemelos, otra escala.
@@ -117,7 +128,7 @@ H2_MAXIMOS = {
     "f0_medio": 0.1675,         # MedianF0_MeasureReading
     "f0_variabilidad": 0.1276,  # StdF0_MeasureReading
     "f1": 0.0872,               # MedianF1_MeasureA
-    "f2": 0.1353,               # MedianF2_MeasureVowels (coincide con la regla)
+    "f2": _H2["f2"],            # MedianF2_MeasureVowels (coincide con la regla)
     "f3": 0.0815,               # MedianF3_MeasureO
 }
 
