@@ -81,15 +81,17 @@ PARAMETROS = [
         "correlacion significativa para jitter en gemelos monocigoticos; "
         "Campos et al. 2024 (Social Sciences & Humanities Open, 10, 101062; "
         "gemelas brasileras) informa una correlacion intra-par MZ debil "
-        "de 0.374 (IC95% 0.11-0.59). Evidencia contradictoria y de muestra "
-        "chica -> valor conservador. Coherente con Gisladottir: 41 de 72 "
-        "medidas acusticas tienen h2-SNP < 5%",
+        "de 0.374 (IC95% 0.11-0.59; cifras PENDIENTES de verificar con el "
+        "articulo), sin diferencia entre MZ y DZ. Evidencia debil, apunta a un "
+        "valor pequeno o nulo -> 0.05 como cota superior declarada. Coherente "
+        "con Gisladottir: 41 de 72 medidas acusticas tienen h2-SNP < 5%",
     ),
     ParametroAcustico(
         "hnr", "dB", _H2["hnr"], "debil",
         "No esta en la S6. Campos et al. 2024 informa una correlacion intra-par MZ debil "
-        "de 0.366 (IC95% 0.10-0.59) para HNR; sin estimacion de h2-SNP "
-        "publicada. Valor conservador, mismo criterio que jitter",
+        "de 0.366 (IC95% 0.10-0.59; cifras PENDIENTES de verificar con el "
+        "articulo) para HNR, sin diferencia entre MZ y DZ; sin estimacion de "
+        "h2-SNP publicada. Cota superior declarada, mismo criterio que jitter",
     ),
     ParametroAcustico(
         "f1", "Hz", _H2["f1"], "directa",

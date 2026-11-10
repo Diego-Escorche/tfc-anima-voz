@@ -3,6 +3,7 @@ Tests de niveles.py y de la regla de la entrega del 9/11: los ocho h2 viven
 en un unico archivo de datos, config/niveles_declarados.json.
 """
 
+import importlib.util
 import io
 import json
 import re
@@ -13,10 +14,14 @@ from pathlib import Path
 import pytest
 
 from tfc_voz.cohorte import generar_cohorte, leer_cohorte
-from tfc_voz.niveles import RUTA, RUTA_COHORTE, cargar, composicion_de
+from tfc_voz.niveles import RUTA, RUTA_COHORTE, cargar
 from tfc_voz.parametros import PARAMETROS
 
 RAIZ = Path(__file__).resolve().parents[1]
+_spec = importlib.util.spec_from_file_location("calcular_segundo_nivel",
+                                               RAIZ / "scripts" / "calcular_segundo_nivel.py")
+calcular = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(calcular)
 # Los .py del modulo, tests incluidos: un test que escribe un nivel a mano
 # pasaria aunque la configuracion cambie.
 CARPETAS_DEL_MODULO = ("src/tfc_voz", "scripts", "informes", "tests")
@@ -102,45 +107,65 @@ def test_agregados(niveles, json_niveles):
     """Caso base 7,07 % (el 7,1 % de los documentos) y segundo nivel 0,148 %."""
     esperados = json_niveles["agregados_esperados"]
     assert niveles.agregado("caso_base") == pytest.approx(esperados["caso_base"], abs=1e-6)
-    assert niveles.agregado("segundo_nivel") == pytest.approx(esperados["segundo_nivel"], abs=1e-4)
-    assert round(100 * niveles.agregado("segundo_nivel"), 3) == pytest.approx(0.148)
+    assert niveles.agregado("segundo_nivel") == pytest.approx(esperados["segundo_nivel"], abs=1e-6)
 
 
-def test_segundo_nivel_derivado_coincide_con_su_control(niveles, json_niveles):
-    """V por subpoblacion, con la composicion de la cohorte 2.0, contra los valores escritos."""
-    escrito = json_niveles["niveles"]["segundo_nivel"]
-    derivado = niveles.de("segundo_nivel")
+def test_el_segundo_nivel_es_entrada(niveles, json_niveles):
+    """El cargador no recalcula: devuelve los valores escritos (tercera vuelta del 9/11)."""
+    assert niveles.de("segundo_nivel") == json_niveles["niveles"]["segundo_nivel"]
+    sin_variante = [n for n, x in niveles.de("segundo_nivel").items() if x == 0]
+    assert sin_variante == ["f0_variabilidad", "jitter", "hnr", "f3", "vtl"]
+
+
+def test_el_script_reproduce_el_segundo_nivel(niveles):
+    """Auditoria: V calculado una vez con la composicion registrada da los valores escritos."""
+    v = calcular.segundo_nivel(niveles, niveles.composicion)
     for nombre in niveles.parametros:
-        assert derivado[nombre] == pytest.approx(escrito[nombre], abs=5e-7), nombre
-    assert [n for n, x in derivado.items() if x == 0] == ["f0_variabilidad", "jitter", "hnr", "f3", "vtl"]
+        assert v[nombre] == pytest.approx(niveles.de("segundo_nivel")[nombre], abs=1e-6), nombre
 
 
-def test_v_se_calcula_con_la_composicion_de_la_cohorte(niveles):
-    """V sale del archivo de cohorte, no de un valor fijo: otra composicion da otro V."""
+def test_composicion_registrada_es_la_de_la_cohorte_2_0(niveles):
     cohorte = leer_cohorte(RUTA_COHORTE)
-    assert niveles.composicion == composicion_de(cohorte)
-    assert sum(niveles.composicion.values()) == pytest.approx(1.0)
-    solo_fin = cohorte.assign(subpoblacion="FIN")
-    with pytest.raises(ValueError, match="subpoblaciones"):
-        cargar(cohorte=solo_fin)
+    registrada = niveles.composicion_cohorte
+    assert registrada["version"] == "2.0" and registrada["n"] == len(cohorte)
+    assert registrada["conteos"] == cohorte["subpoblacion"].value_counts().to_dict()
+    assert registrada["sha256_csv"] == json.loads(
+        RUTA_COHORTE.with_suffix(".meta.json").read_text(encoding="utf-8"))["sha256_csv"]
+    assert niveles.verificacion_cohorte.startswith("verificada")
 
 
-def test_v_con_una_cohorte_generada(niveles):
-    """Con la cohorte generada (misma composicion por diseno), V da lo mismo."""
-    otra = cargar(cohorte=generar_cohorte())
-    assert otra.de("segundo_nivel") == pytest.approx(niveles.de("segundo_nivel"), abs=1e-12)
+def test_otra_composicion_falla_y_nombra_la_subpoblacion():
+    """Una cohorte con otra mezcla de subpoblaciones no mueve el nivel en silencio: falla."""
+    cohorte = leer_cohorte(RUTA_COHORTE)
+    otra = cohorte.assign(subpoblacion=cohorte["subpoblacion"].replace({"GBR": "FIN"}))
+    with pytest.raises(ValueError, match="subpoblacion FIN.*cohorte 2.0.*volver a declararlo"):
+        cargar(cohorte=otra)
+
+
+def test_la_cohorte_generada_tiene_la_composicion_registrada():
+    """generar_cohorte (la de --generar-cohorte) usa los mismos conteos: pasa la verificacion."""
+    assert cargar(cohorte=generar_cohorte()).verificacion_cohorte.startswith("verificada")
+
+
+def test_sin_cohorte_carga_y_avisa(tmp_path, niveles):
+    sin = cargar(ruta_cohorte=tmp_path / "cohorte_anima.csv")
+    assert sin.de("segundo_nivel") == niveles.de("segundo_nivel")
+    assert "NO VERIFICADA" in sin.verificacion_cohorte
+    assert "NO VERIFICADA" in sin.describir("caso_base")
 
 
 def test_describir_dice_nivel_archivo_version_y_fecha(niveles):
     texto = niveles.describir("segundo_nivel")
-    for parte in ("segundo_nivel", "niveles_declarados.json", "version 1.1", "2026-11-09", "Tabla S8"):
+    for parte in ("segundo_nivel", "niveles_declarados.json", "version 1.2", "2026-11-09", "Tabla S8",
+                  "verificada"):
         assert parte in texto
 
 
 def test_salvedad_de_jitter_y_hnr(niveles):
     salvedad = niveles.salvedades["jitter_hnr"]
-    assert "Campos et al., 2024" in salvedad and "Lima" not in salvedad
-    assert "S6" not in salvedad
+    assert "Campos et al. (2024)" in salvedad and "Lima" not in salvedad
+    assert "cota superior declarada" in salvedad and "S6" not in salvedad
+    assert "pendientes de verificar" in niveles.salvedades["campos_2024"]
 
 
 # --- El cargador rechaza archivos que no cierran -----------------------------
@@ -167,17 +192,17 @@ def test_rechaza_parametro_faltante(tmp_path):
         cargar(_copia(tmp_path, cambiar))
 
 
-def test_rechaza_v_que_no_coincide_con_su_control(tmp_path):
+def test_rechaza_conteos_que_no_suman_n(tmp_path):
     def cambiar(d):
-        d["variantes"][0]["beta"] *= 1.2
-    with pytest.raises(ValueError, match="control escrito"):
+        d["composicion_cohorte"]["conteos"]["TSI"] += 1
+    with pytest.raises(ValueError, match="suman"):
         cargar(_copia(tmp_path, cambiar))
 
 
 def test_rechaza_varianza_conocida_mayor_que_h2(tmp_path):
     def cambiar(d):
         base = d["niveles"]["caso_base"]
-        corrimiento = base["f1"] - d["niveles"]["segundo_nivel"]["f1"] / 2
+        corrimiento = base["f1"] - d["niveles"]["segundo_nivel"]["f1"] / 2  # f1 queda por debajo de V
         base["f1"] -= corrimiento
         base["f3"] += corrimiento  # mantiene el agregado
     with pytest.raises(ValueError, match="supera la h2"):

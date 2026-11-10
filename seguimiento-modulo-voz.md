@@ -35,7 +35,7 @@ Semana del 9/11, en el orden de la entrega de Diego del 9/11 (cada punto habilit
 - [x] 1. Paquete `anima_spine` 2.2 en el repo, con la cohorte 2.0 (503 personas de 1000 Genomes y 1.497 simuladas; huella `8203824a…`, coincide con los metadatos). Suite del paquete: 43 pasan, 16 salteadas (contrato de módulos que no exportaron) (9/11)
 - [x] 2. Cohorte 1.1 reemplazada por la 2.0 en todo el módulo. `informes/voz_para_calibracion.csv` (hecho sobre la 1.1) retirado por obsoleto; queda en el historial de git (9/11)
 - [x] 3. Los ocho h² en un único archivo de configuración, `config/niveles_declarados.json`, cargado por `niveles.py`; `parametros.py` ya no tiene literales y `tests/test_niveles.py` falla si un nivel aparece escrito a mano en un `.py` del módulo (9/11)
-- [x] 4. Los dos niveles declarados en esa configuración: caso base (agregado 7,07 %) y segundo nivel por parámetro, derivado: V por subpoblación ponderada por la composición de la cohorte, con los valores del JSON como control (tolerancia 0,0002; agregado 0,148 %). `describir` da el renglón del reporte con nivel, archivo, versión y fecha. Configuración en la versión 1.1 (9/11)
+- [x] 4. Los dos niveles declarados en esa configuración: caso base (agregado 7,07 %) y segundo nivel por parámetro (V por subpoblación, agregado 0,148 %), los dos como entrada. La composición de la cohorte 2.0 queda registrada al lado; el cargador la verifica y no recalcula. V se calcula una vez con `scripts/calcular_segundo_nivel.py`. `describir` da el renglón del reporte con nivel, archivo, versión, fecha y verificación de la cohorte. Configuración en la versión 1.2 (9/11)
 - [x] 5. `informes/voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas: 160.000 filas, columnas nuevas `replica`, `semilla`, `dominio` y `sexo`; caso base y puntaje genético enteramente simulado, declarado en `voz_para_calibracion.meta.json`. Validación OK. Se regenera cuando entre el punto 7 (9/11)
 - [ ] 6. Etapa 3: el modelo heterocedástico
 - [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales (archivo que pasa Diego, en `datos/genotipos_voz_1000g.csv`; no se descarga nada), g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
@@ -59,7 +59,7 @@ Plan por semanas del 29/10 (se reordena con el brief del 5/11):
 
 ## Fase 5 — Cierre de resultados de Voz (9 dic – 21 dic)
 - [ ] VZ-13: tabla de los 8 parámetros ordenados por ΔR² parcial, con el total y la h² inyectada al lado
-- [ ] Etapa 6: `prototipo.py` (un comando corre todo el circuito) y `reporte_voz.md`
+- [ ] Etapa 6: `prototipo.py` (un comando corre todo el circuito) y `reporte_voz.md`. `--generar-cohorte` con otra composición de subpoblaciones falla (lo verifica `niveles.cargar`); el reporte avisa si la composición no se verificó
 - [ ] `predicciones_voz.csv`, `intervalos_voz.csv` y `barrido_voz.csv` definitivos entregados al análisis integral — 21 dic
 
 ## Fase 6 — Síntesis de audio y vista vocal (9 dic – 21 dic)
@@ -150,6 +150,10 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **CSV de calibración fuera de git:** aprobado, con su `.meta.json` (semilla, versiones, huella) y una regeneración verificada desde un clon limpio.
   - **Genotipos en `datos/`**, no en `anima_spine/datos/`, para no mezclar datos de Voz con el paquete del grupo.
 
+- **9/11 — Respuestas de Diego, tercera vuelta:**
+  - **Jitter y HNR:** Campos et al. (2024) no encuentran diferencia entre gemelas MZ y DZ en estos dos parámetros, así que la evidencia apunta a un valor pequeño o nulo. El 0,05 es una cota superior declarada, deliberadamente generosa, para no meter a mano el resultado nulo que el módulo espera. Las cifras atribuidas a Campos (0,374, 0,366, los intervalos) y las iniciales de la primera autora quedan pendientes de verificar: Diego lee el artículo esta semana.
+  - **Segundo nivel otra vez como entrada:** calcularlo al cargar haría que el nivel declarado se moviera en silencio con la composición de la cohorte. Los valores (0,006086, 0,003436, 0,002278; agregado 0,001475) son entrada, con la composición de la cohorte 2.0 y su huella registradas al lado. El cargador verifica la composición: si difiere, error con la subpoblación; si falta la cohorte, carga y el reporte lo avisa. Cambiar la composición pasa por la Tabla 7 del documento integrado, no por una línea de comando.
+
 ## Decisiones pendientes del grupo (bloquean)
 
 - [ ] Con qué criterio se eligen las h² en los tres módulos. Queda vinculado a las decisiones 2 y 3 del documento integrado; Rostro mantiene 7,9 % por ahora
@@ -188,6 +192,8 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 
 ## Reemplazado el 9/11
 
+- **Niveles declarados 1.1:** el segundo nivel se derivaba al cargar, con la composición de la cohorte cargada, y los valores del JSON eran control (tolerancia 0,0002). Desde la 1.2 son entrada y la composición se verifica.
+- **Salvedad de jitter y HNR (1.1):** "valor conservador de 0,05, apoyado en estudios de gemelos (Van Lierde et al., 2005; Campos et al., 2024)". Desde la 1.2, cota superior declarada; la evidencia apunta a un valor pequeño o nulo.
 - **Niveles declarados 1.0:** el segundo nivel era configurado, calculado con la frecuencia europea promedio (0,006160, 0,003433 y 0,002247). Desde la 1.1 es derivado por subpoblación y esos valores son control.
 
 - **Fase 2:** "Columna vertebral `anima_spine` 1.1 en el repo: `cohorte_anima.csv` v1.1". Desde el 9/11 el paquete es el 2.2 y la cohorte, la 2.0.

@@ -1,17 +1,18 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "fijado": "2026-11-09",
   "nota": "Niveles declarados del modulo Vocal. Se fijan antes de la primera corrida y no se eligen mirando resultados.",
   "cambios": {
-    "1.1": "2026-11-09: el segundo nivel pasa a ser derivado (V por subpoblacion, ponderada por la composicion de la cohorte, con la misma p que centra g_conocida). Sus valores escritos aca son control, no entrada. Se corrige la cita de Campos et al. (2024). El caso base no cambia."
+    "1.1": "2026-11-09: el segundo nivel se calcula por subpoblacion, ponderado por la composicion de la cohorte, con la misma p que centra g_conocida. Se corrige la cita de Campos et al. (2024). El caso base no cambia.",
+    "1.2": "2026-11-09: el segundo nivel vuelve a ser entrada (mismos valores que la 1.1), con la composicion de la cohorte con la que se calculo registrada al lado. El cargador no recalcula: verifica que la cohorte cargada tenga esa composicion. Salvedad de jitter y HNR reescrita."
   },
   "fuentes": {
     "caso_base": "Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026",
-    "segundo_nivel": "Gisladottir et al. (2023), Tabla S8: suma sobre subpoblaciones de w_s * 2 * p_s * (1 - p_s) * beta^2, con las frecuencias por subpoblacion de 1000 Genomes fase 3 y w_s la fraccion de la cohorte en cada subpoblacion"
+    "segundo_nivel": "Gisladottir et al. (2023), Tabla S8: suma sobre subpoblaciones de w_s * 2 * p_s * (1 - p_s) * beta^2, con las frecuencias por subpoblacion de 1000 Genomes fase 3 y w_s la composicion registrada en composicion_cohorte. Calculado una vez con scripts/calcular_segundo_nivel.py"
   },
   "salvedades": {
-    "jitter_hnr": "Jitter y HNR no tienen una heredabilidad SNP publicada: se les asigna un valor conservador de 0,05, apoyado en estudios de gemelos (Van Lierde et al., 2005; Campos et al., 2024). Que los dos valgan exactamente 0,0500 no es un redondeo: es el mismo valor declarado aplicado a dos medidas sobre las que no hay evidencia. Si aparece un GWAS de jitter o HNR, reemplaza al valor conservador y hay que recalcular el agregado del caso base.",
-    "segundo_nivel": "Los valores de segundo_nivel son control: el cargador calcula V desde beta, las frecuencias por subpoblacion y la composicion de la cohorte, y falla si difiere del valor escrito en mas de 0,0002. Los cinco ceros quedan cubiertos por el control del agregado."
+    "jitter_hnr": "Jitter y HNR no tienen una heredabilidad SNP publicada. La evidencia de gemelos es debil y apunta a un valor pequeno o nulo: Van Lierde et al. (2005) no obtuvieron correlaciones significativas, y Campos et al. (2024) encuentran que las gemelas monocigoticas no se diferencian de las dicigoticas en estos dos parametros. Se les asigna 0,05 como cota superior declarada por el proyecto, deliberadamente generosa, para no dar por supuesto el resultado nulo que el modulo espera encontrar.",
+    "campos_2024": "Las cifras atribuidas a Campos et al. (2024) en parametros.py y decisiones-fase1.md (0,374 para jitter, 0,366 para HNR y sus intervalos) y las iniciales de la primera autora estan pendientes de verificar con el articulo a la vista (Diego, semana del 9/11)."
   },
   "niveles": {
     "caso_base": {
@@ -23,8 +24,13 @@
       "f1": 0.002278, "f2": 0.003436, "f3": 0.0, "vtl": 0.0
     }
   },
-  "tolerancia_control_segundo_nivel": 0.0002,
   "agregados_esperados": { "caso_base": 0.070737, "segundo_nivel": 0.001475 },
+  "composicion_cohorte": {
+    "version": "2.0",
+    "sha256_csv": "8203824aff641fb8a7e54a09d902a887407c81f70b000846b37b9f296609abb6",
+    "n": 2000,
+    "conteos": {"CEU": 394, "FIN": 394, "GBR": 362, "IBS": 425, "TSI": 425}
+  },
   "variantes": [
     { "rs": "rs11046212", "parametro": "f0_medio", "alelo_efecto": "T",
       "beta": 0.114, "frecuencias": {"CEU": 0.47, "FIN": 0.31, "GBR": 0.40, "IBS": 0.36, "TSI": 0.39} },

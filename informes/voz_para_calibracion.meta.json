@@ -55,9 +55,9 @@
   },
   "nivel_declarado": {
     "nivel": "caso_base",
-    "descripcion": "Nivel declarado: caso_base (agregado 7.074 %), de niveles_declarados.json, version 1.1, fijado el 2026-11-09. Fuente: Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026.",
+    "descripcion": "Nivel declarado: caso_base (agregado 7.074 %), de niveles_declarados.json, version 1.2, fijado el 2026-11-09. Fuente: Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026. Composicion de la cohorte: verificada contra la cohorte 2.0 (2000 personas).",
     "archivo": "config/niveles_declarados.json",
-    "version": "1.1",
+    "version": "1.2",
     "fijado": "2026-11-09",
     "valores": {
       "f0_medio": 0.1027,
