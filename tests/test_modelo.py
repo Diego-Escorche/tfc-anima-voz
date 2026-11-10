@@ -11,7 +11,7 @@ from tfc_voz.modelo import (Ajuste, ErrorConvergencia, _menos_log_verosimilitud,
                             predecir, punto_de_partida)
 
 N = 20_000
-TOLERANCIA = 0.05
+TOLERANCIA = 0.05  # nivel-literal-ok: tolerancia del brief para modelo.py, no la h2 de jitter/hnr
 BETA = np.array([0.5, -1.0, 0.3])  # constante, binaria, continua
 
 
