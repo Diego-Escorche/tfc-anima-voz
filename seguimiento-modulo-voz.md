@@ -34,11 +34,11 @@ Es el bloque 2 del brief del prototipo. Informe semanal en `informes/avance-bloq
 Semana del 9/11, en el orden de la entrega de Diego del 9/11 (cada punto habilita al siguiente):
 - [x] 1. Paquete `anima_spine` 2.2 en el repo, con la cohorte 2.0 (503 personas de 1000 Genomes y 1.497 simuladas; huella `8203824a…`, coincide con los metadatos). Suite del paquete: 43 pasan, 16 salteadas (contrato de módulos que no exportaron) (9/11)
 - [x] 2. Cohorte 1.1 reemplazada por la 2.0 en todo el módulo. `informes/voz_para_calibracion.csv` (hecho sobre la 1.1) retirado por obsoleto; queda en el historial de git (9/11)
-- [ ] 3. Los ocho h² en un único archivo de configuración, con un test que falle si alguno aparece escrito a mano en otro `.py`
-- [ ] 4. Los dos niveles declarados en esa configuración: caso base 7,1 % y segundo nivel 0,15 %; el reporte imprime cuál usó, con su fuente y fecha
-- [ ] 5. `voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas (160.000 filas; columnas nuevas `replica`, `semilla` y `sexo`). **Comprometido para el viernes 13/11** (lo espera Temperamento); si no llega, avisar el miércoles 11/11
+- [x] 3. Los ocho h² en un único archivo de configuración, `config/niveles_declarados.json`, cargado por `niveles.py`; `parametros.py` ya no tiene literales y `tests/test_niveles.py` falla si un nivel aparece escrito a mano en un `.py` del módulo (9/11)
+- [x] 4. Los dos niveles declarados en esa configuración: caso base (agregado 7,07 %) y segundo nivel por parámetro (2pq·β², agregado 0,148 %); `describir` da el renglón del reporte con nivel, archivo, versión y fecha (9/11)
+- [x] 5. `informes/voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas: 160.000 filas, columnas nuevas `replica`, `semilla`, `dominio` y `sexo`; caso base y puntaje genético enteramente simulado, declarado en `voz_para_calibracion.meta.json`. Validación OK. Se regenera cuando entre el punto 7 (9/11)
 - [ ] 6. Etapa 3: el modelo heterocedástico
-- [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales, g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
+- [ ] 7. Variantes conocidas: genotipos de las tres variantes de la tabla S8 para las 503 personas reales (archivo que pasa Diego; no se descarga nada), g = g_conocida + g_resto, VZ-14 y VZ-15 (control: varianza de la parte conocida de f0_medio ≈ 0,0062)
 - [ ] 8. `recuperacion_voz.csv` y criterio de recuperación (tolerancia 0,015, sobre el caso base)
 - [ ] 9. Análisis de dos niveles
 
@@ -133,6 +133,15 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
 - **3/11 — Hipótesis reformulada** (aprobada por el tutor): ningún contraste entre dominios se afirma. Por dominio, el modelo recupera el nivel de señal declarado, con una tolerancia que es un criterio verificable. `compare.comparar` ya no devuelve `hipotesis_dos_niveles`.
 - **Entre el 1 y el 5/11 — Dos niveles declarados:** caso base 7,1 % (heredabilidad por variantes comunes, agregado de los ocho parámetros) y segundo nivel 0,15 % (lo que recuperan las tres variantes publicadas). No se elige ni se ajusta ningún nivel mirando resultados.
 - **9/11 — Paquete `anima_spine` 2.2:** el criterio de recuperación tiene tolerancia 0,015 (antes 0,005) y se evalúa sobre el caso base; el segundo nivel se informa sin criterio. `predictions.verificar` exige las dos líneas base. Fuera de alcance: el puntaje poligénico de estatura y las dos variantes nuevas del meta-análisis entre poblaciones.
+
+- **9/11 — Respuestas de Diego a las consultas de la entrega:**
+  - **Genotipos:** la regla de no descargar datasets sigue en pie. Diego pasa los genotipos de las tres variantes como archivo (`genotipos_voz_1000g.csv`).
+  - **CSV del punto 5:** se entrega con el puntaje genético enteramente simulado y el caso base, con una nota que lo declare; se regenera cuando entre el punto 7.
+  - **Control propio de `salida.py`** sobre las dos líneas base: se queda, redundante a propósito.
+  - **Niveles declarados:** en `config/niveles_declarados.json`. El caso base son las h² de siempre; el segundo nivel es por parámetro (0,006160 en f0_medio, 0,003433 en f2, 0,002247 en f1, cero en el resto), y el 0,148 % es su promedio. Los 0,0500 de jitter y hnr quedan como salvedad a confirmar antes de la entrega final.
+  - **Variantes conocidas:** g = g_conocida + g_resto, con g_conocida centrada por la frecuencia de la subpoblación y g_resto con varianza h² − V. VZ-14 (tres partes) y VZ-15 (varianza de g_conocida en f0_medio ≈ 0,0062; si se va por más de un factor de dos, parar). Si la frecuencia observada se aparta más de 10 puntos de la configurada, error, sin corregir.
+  - **Recuperación:** `recuperacion_voz.csv` con las funciones del paquete, tolerancia de `predictions.TOLERANCIA_RECUPERACION`, sobre el promedio de 20 réplicas y sólo en el caso base.
+  - **Dos niveles:** fenotipos siempre con la g completa y el caso base; el modelo recibe la g completa (caso base) o sólo g_conocida (segundo nivel). Se informa el ΔR² parcial con IC y el angostamiento del intervalo, 1 − √(1 − ΔR² parcial).
 
 ## Decisiones pendientes del grupo (bloquean)
 

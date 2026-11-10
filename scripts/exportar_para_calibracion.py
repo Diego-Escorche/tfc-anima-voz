@@ -1,9 +1,12 @@
 """
 Datos de Voz para la capa de calibracion comun (la de Tomas).
 
-Genera los fenotipos sobre cohorte_anima.csv con la semilla 20261019 (la de
-la replica 0 del prototipo) y escribe informes/voz_para_calibracion.csv: las
-personas de calibracion y de prueba, por los 8 parametros (8.000 filas).
+Genera los fenotipos sobre cohorte_anima.csv (cohorte 2.0) en las 20
+replicas del barrido, con la semilla 20261019 + replica, y escribe
+informes/voz_para_calibracion.csv: las personas de calibracion y de prueba,
+por los 8 parametros y las 20 replicas (160.000 filas). Al lado escribe
+voz_para_calibracion.meta.json, con la huella del CSV, el nivel declarado
+usado y la nota sobre el puntaje genetico.
 
 mu_oraculo y sigma_oraculo son la media y el desvio VERDADEROS de cada persona,
 conocidos por diseno: mu_oraculo = m + s * g y sigma_oraculo = s * sqrt(1 - h2).
@@ -11,67 +14,126 @@ No son predicciones de ningun modelo. Sirven para que la capa de calibracion
 pruebe con datos que tienen la forma real de Voz antes de que exista el modelo.
 El calculo es fenotipo.oraculo, el mismo que usa la tabla predictiva.
 
-Las columnas siguen la propuesta que Diego le mando a Tomas el 26/10. Si el
-contrato congelado usa otros nombres, se renombran en COLUMNAS, sin tocar la
-logica.
+Nivel declarado: el caso base. El puntaje genetico es enteramente simulado,
+tambien en las 503 personas reales de 1000 Genomes: cuando entren las
+variantes conocidas (punto 7 de la entrega del 9/11) se regenera, con las
+mismas columnas y otros valores.
+
+Columnas (respuesta de Diego del 9/11): replica, semilla, dominio y sexo
+primero, en el orden que pidio el responsable de la capa, y despues las que
+ya tenia el archivo. Si el contrato congelado usa otros nombres, se renombran
+en COLUMNAS, sin tocar la logica.
 
 Uso (parado en la raiz del proyecto):
     python scripts/exportar_para_calibracion.py
 """
 
 import argparse
+import hashlib
+import json
 import sys
+from datetime import date
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(RAIZ / "src"), str(RAIZ)]
+from anima_spine import predictions  # noqa: E402
 from tfc_voz.cohorte import leer_cohorte  # noqa: E402
 from tfc_voz.fenotipo import generar_fenotipos, oraculo  # noqa: E402
 from tfc_voz.genotipo import SEMILLA  # noqa: E402
-from tfc_voz.parametros import PARAMETROS  # noqa: E402
+from tfc_voz.parametros import NIVELES, PARAMETROS  # noqa: E402
 from tfc_voz.poblacion import EFECTOS  # noqa: E402
 
-COLUMNAS = ["individuo_id", "particion", "rasgo", "y_real", "mu_oraculo", "sigma_oraculo"]
+COLUMNAS = ["replica", "semilla", "dominio", "sexo",
+            "individuo_id", "particion", "rasgo", "y_real", "mu_oraculo", "sigma_oraculo"]
 PARTICIONES = ("calibracion", "prueba")
+DOMINIO = "voz"
+NIVEL = "caso_base"
+NOTA_PUNTAJE = ("Generado con el puntaje genetico g enteramente simulado, tambien en las 503 personas "
+                "reales de 1000 Genomes. Cuando entren las variantes conocidas (g = g_conocida + g_resto) "
+                "se regenera con las mismas columnas y la misma distribucion, y otros valores.")
 
 
-def armar_datos(cohorte, parametros=PARAMETROS, efectos=EFECTOS, semilla=SEMILLA):
-    """Filas de calibracion y prueba con y real, media y desvio oraculo."""
+def armar_replica(cohorte, replica, parametros=PARAMETROS, efectos=EFECTOS):
+    """Filas de calibracion y prueba de una replica, con y real, media y desvio oraculo."""
+    semilla = SEMILLA + replica
     fenotipos = generar_fenotipos(cohorte, parametros, efectos, semilla)
     datos = (oraculo(cohorte, fenotipos, parametros, efectos)
              .merge(fenotipos[["individuo_id", "rasgo", "y"]], on=["individuo_id", "rasgo"])
-             .merge(cohorte[["individuo_id", "particion"]], on="individuo_id")
-             .rename(columns={"y": "y_real"}))
+             .merge(cohorte[["individuo_id", "particion", "sexo"]], on="individuo_id")
+             .rename(columns={"y": "y_real"})
+             .assign(replica=replica, semilla=semilla, dominio=DOMINIO))
     return datos[datos["particion"].isin(PARTICIONES)].reset_index(drop=True)[COLUMNAS]
 
 
-def escribir(datos, ruta):
-    """Escribe el CSV con finales de linea LF, igual en cualquier sistema."""
-    datos.to_csv(ruta, index=False, lineterminator="\n")
+def armar_datos(cohorte, parametros=PARAMETROS, efectos=EFECTOS, replicas=predictions.REPLICAS):
+    """Las replicas 0 a replicas - 1, una debajo de la otra."""
+    return pd.concat([armar_replica(cohorte, r, parametros, efectos) for r in range(replicas)],
+                     ignore_index=True)
 
 
-def validar(datos, cohorte, parametros=PARAMETROS):
+def validar(datos, cohorte, parametros=PARAMETROS, replicas=predictions.REPLICAS):
     """Levanta AssertionError si el archivo no cumple lo que espera la capa de calibracion."""
     if list(datos.columns) != COLUMNAS:
         raise AssertionError(f"columnas {list(datos.columns)}, se esperaba {COLUMNAS}")
-    if datos.duplicated(["individuo_id", "rasgo"]).any():
-        raise AssertionError("hay mas de una fila por (individuo_id, rasgo)")
+    if datos.duplicated(["individuo_id", "rasgo", "replica"]).any():
+        raise AssertionError("hay mas de una fila por (individuo_id, rasgo, replica)")
+    if set(datos["replica"]) != set(range(replicas)):
+        raise AssertionError(f"replicas {sorted(set(datos['replica']))}, se esperaban 0 a {replicas - 1}")
+    if not (datos["semilla"] == SEMILLA + datos["replica"]).all():
+        raise AssertionError(f"hay filas cuya semilla no es {SEMILLA} + replica")
+    if not (datos["dominio"] == DOMINIO).all():
+        raise AssertionError(f"hay filas con dominio distinto de {DOMINIO!r}")
     rasgos = {p.nombre for p in parametros}
     if set(datos["rasgo"]) != rasgos:
         raise AssertionError(f"rasgos {sorted(set(datos['rasgo']))}, se esperaba {sorted(rasgos)}")
-    esperado = cohorte.loc[cohorte["particion"].isin(PARTICIONES), ["individuo_id", "particion"]]
-    esperado = dict(zip(esperado["individuo_id"], esperado["particion"]))
-    for rasgo, grupo in datos.groupby("rasgo"):
-        obtenido = dict(zip(grupo["individuo_id"], grupo["particion"]))
+    esperado = cohorte.loc[cohorte["particion"].isin(PARTICIONES), ["individuo_id", "particion", "sexo"]]
+    esperado = set(esperado.itertuples(index=False, name=None))
+    for (replica, rasgo), grupo in datos.groupby(["replica", "rasgo"]):
+        obtenido = set(grupo[["individuo_id", "particion", "sexo"]].itertuples(index=False, name=None))
         if obtenido != esperado:
-            raise AssertionError(f"rasgo {rasgo}: los ids o las particiones no coinciden con la cohorte")
+            raise AssertionError(f"replica {replica}, rasgo {rasgo}: los ids, las particiones o el sexo "
+                                 "no coinciden con la cohorte")
     numericos = datos[["y_real", "mu_oraculo", "sigma_oraculo"]].to_numpy()
     if not np.isfinite(numericos).all():
         raise AssertionError("hay valores no finitos")
     if not (datos["sigma_oraculo"] > 0).all():
         raise AssertionError("hay sigma_oraculo no positivo")
+
+
+def escribir(datos, ruta, ruta_cohorte):
+    """Escribe el CSV (finales de linea LF) y su .meta.json. Devuelve la ruta del meta."""
+    ruta = Path(ruta)
+    datos.to_csv(ruta, index=False, lineterminator="\n")
+    cohorte_meta = json.loads(Path(ruta_cohorte).with_suffix(".meta.json").read_text(encoding="utf-8"))
+    meta = {
+        "archivo": ruta.name,
+        "generado": date.today().isoformat(),
+        "sha256": hashlib.sha256(ruta.read_bytes()).hexdigest(),
+        "filas": len(datos),
+        "columnas": COLUMNAS,
+        "cohorte": {"version": cohorte_meta["version"], "sha256_csv": cohorte_meta["sha256_csv"]},
+        "particiones": list(PARTICIONES),
+        "replicas": sorted(int(r) for r in datos["replica"].unique()),
+        "semillas": f"{SEMILLA} + replica",
+        "nivel_declarado": {
+            "nivel": NIVEL,
+            "descripcion": NIVELES.describir(NIVEL),
+            "archivo": f"config/{NIVELES.ruta.name}",
+            "version": NIVELES.version,
+            "fijado": NIVELES.fijado,
+            "valores": NIVELES.de(NIVEL),
+        },
+        "puntaje_genetico": NOTA_PUNTAJE,
+        "oraculo": "mu_oraculo = m + s * g y sigma_oraculo = s * sqrt(1 - h2): media y desvio verdaderos, "
+                   "conocidos por diseno. No son predicciones de ningun modelo.",
+    }
+    ruta_meta = ruta.with_name(ruta.stem + ".meta.json")
+    ruta_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return ruta_meta
 
 
 def main():
@@ -84,8 +146,10 @@ def main():
     datos = armar_datos(cohorte)
     validar(datos, cohorte)
     args.salida.parent.mkdir(parents=True, exist_ok=True)
-    escribir(datos, args.salida)
+    ruta_meta = escribir(datos, args.salida, args.cohorte)
     print(f"{args.salida}: {len(datos)} filas, validacion OK")
+    print(f"{ruta_meta}")
+    print(NIVELES.describir(NIVEL))
     print(datos.groupby(["rasgo", "particion"]).size().unstack().to_string())
 
 

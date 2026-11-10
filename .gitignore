@@ -13,3 +13,7 @@ __pycache__/
 
 # Paquete de la columna vertebral, se copia descomprimido
 *.zip
+
+# 160.000 filas (15 MB), se regenera con scripts/exportar_para_calibracion.py;
+# su huella queda en informes/voz_para_calibracion.meta.json
+informes/voz_para_calibracion.csv
