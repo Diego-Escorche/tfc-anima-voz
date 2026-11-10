@@ -1,6 +1,6 @@
 # Avance del bloque 2 — módulo de Voz (desde el 9/11)
 
-**Última actualización:** 9/11/2026 · **Estado:** puntos 1 a 6 de la entrega del 9/11 hechos. Siguen el 7 (variantes conocidas), el 8 (recuperación) y el 9 (análisis de dos niveles).
+**Última actualización:** 9/11/2026 · **Estado:** puntos 1 a 7 de la entrega del 9/11 hechos. Siguen el 8 (recuperación) y el 9 (análisis de dos niveles).
 
 Informe pedido por el "Brief para IA programadora — prototipo autónomo del módulo de Voz", para que Diego se lo pase al manager y a Claude. Se actualiza al cerrar cada semana. Sirve para que los documentos del grupo queden sincronizados con el código: lo que cambió en el repositorio está en "Estado de cada paso" y en "Decisiones consultadas"; lo que hay que decidir, en "Preguntas abiertas".
 
@@ -16,7 +16,7 @@ Orden de la entrega de Diego del 9/11.
 | 4. Los dos niveles declarados en esa configuración | **Hecho** (9/11) | los mismos, más `scripts/calcular_segundo_nivel.py` (nuevo) | `2db407f`, `6ca0267`, `a0a865f` |
 | 5. `voz_para_calibracion.csv` con 20 réplicas | **Hecho** (9/11), cuatro días antes del plazo del 13/11 | `scripts/exportar_para_calibracion.py`, `informes/voz_para_calibracion.meta.json`, `tests/test_exportar_para_calibracion.py`, `.gitignore` | `2941452`, `6ca0267` |
 | 6. Etapa 3: modelo heterocedástico | **Hecho** (9/11) | `src/tfc_voz/modelo.py` y `src/tfc_voz/lineas_base.py` (nuevos), `tests/test_modelo.py` y `tests/test_lineas_base.py` (nuevos) | `b1297cb`, `0367e6d` |
-| 7. Variantes conocidas, VZ-14 y VZ-15 | **Sin empezar.** Ya no está bloqueado: el archivo de genotipos llegó y pasó la guarda de alineación | `datos/genotipos_voz_1000g.csv` y su `.meta.json` (de Diego, en git) | `6ca0267` |
+| 7. Variantes conocidas, VZ-14 y VZ-15 | **Hecho** (9/11) | `src/tfc_voz/variantes.py` y `tests/test_variantes.py` (nuevos), `src/tfc_voz/fenotipo.py`, `tests/test_fenotipo.py`, `tests/test_lineas_base.py`, `scripts/exportar_para_calibracion.py`; genotipos en `datos/` (de Diego) | `6ca0267`, `78d7a65` |
 | 8. `recuperacion_voz.csv` y criterio de recuperación | Sin empezar | — | — |
 | 9. Análisis de dos niveles | Sin empezar | — | — |
 
@@ -97,13 +97,47 @@ El CSV no cambió con las versiones 1.1 y 1.2 de la configuración, porque el ca
 - Si el ajuste no converge, el error nombra el parámetro y el modelo.
 - El modelo completo recibe la columna de puntaje genético que se le indique. Así el análisis de dos niveles (punto 9) puede pasarle sólo la parte conocida de g sin cambiar el código.
 
+### Punto 7: variantes conocidas
+
+**Cómo se arma g:** g = g_conocida + g_resto, en `fenotipo.py`, con los genotipos de `datos/genotipos_voz_1000g.csv`.
+- **g_conocida** existe sólo en f0_medio, f1 y f2. Es β · (copias − 2·p_s), donde p_s es la frecuencia de la subpoblación de la persona según la configuración.
+  - En las 503 personas reales, las copias salen del archivo.
+  - En las simuladas, se sortean con una binomial de n = 2 y la p de su subpoblación.
+- **g_resto** se genera con varianza h² − V, donde V es el segundo nivel declarado.
+- **En los otros cinco parámetros** g_conocida vale 0 y g no cambia respecto del generador anterior.
+
+**Qué no cambió:**
+- Los números al azar se generan en el mismo orden que antes: primero g_resto, después e, y al final las copias de las simuladas.
+- Por eso e quedó idéntica en los ocho parámetros, y los cinco sin variante dan exactamente los mismos valores que antes del punto 7.
+
+**Guardas:**
+- **Archivo de genotipos:** se verifica su huella contra el `.meta.json`, que haya una columna por variante y que las copias sean 0, 1 o 2.
+- **Alineación del alelo de efecto:** la frecuencia observada en las reales se compara con la configurada, subpoblación por subpoblación. El mayor desvío es 0,0049, contra una tolerancia de 0,10.
+- **Errores que levanta:** un alelo invertido (nombra la variante y no corrige nada), una persona real sin genotipo y V > h².
+
+| Caso | Criterio | Medido |
+|---|---|---|
+| VZ-14.1 | En las 503 reales, g_conocida igual a la suma calculada a mano desde el archivo, persona por persona | Idéntica en las tres variantes, en las réplicas 0 y 7 |
+| VZ-14.2 | En las simuladas, con 200.000 personas, frecuencia recuperada por subpoblación a menos de 0,01 de la configurada | Error máximo: 0,0025 (f0_medio), 0,0024 (f2), 0,0009 (f1) |
+| VZ-14.3 | g_conocida = 0 en los cinco sin variante, y Var(g) = h² en los ocho (tolerancia 0,01, la de VZ-01 a VZ-04) | Cero exacto. Var(g) con 200.000 personas: error máximo 0,0005 (jitter, 0,0505 contra 0,0500). La varianza esperada cierra exacta: V + (h² − V) = h² con error menor que 10⁻⁶ |
+| VZ-15 | Var(g_conocida) de f0_medio alrededor de 0,0062 (Di et al., 2024); parar si se va por más de un factor de dos | 0,00627 en la cohorte 2.0, 0,00608 con 200.000 personas y 0,00608 en las 503 reales solas |
+
+Var(g_conocida) en los otros dos parámetros, en la cohorte 2.0: f2 0,00344 (declarado 0,003436) y f1 0,00227 (declarado 0,002278).
+
+**Nuevo `voz_para_calibracion.csv`:**
+- Cambian `y_real` y `mu_oraculo` en f0_medio, f1 y f2; las columnas y la distribución son las mismas.
+- Huella nueva: `16ad6332b03e46dbdf59b8871a2b2de123e1570e73837bcc42611052388a7a33`. La regeneración desde un clon limpio da idéntica byte a byte.
+- El `.meta.json` describe g = g_conocida + g_resto y nombra la versión anterior. La anterior (huella `b6f8d2d8…`, con g enteramente simulado) se reproduce con el commit `577a0e5`.
+- **Para Diego:** si todavía no se la mandaste a Tomás, conviene mandar la nueva. Si ya le mandaste la anterior, sigue siendo válida para sus tests: es la que acordamos para el viernes.
+
 ## Resultado del pytest completo
 
-**348 tests: 348 pasan, 0 fallan, 0 salteados** (158 s, Python 3.12.4).
+**387 tests: 387 pasan, 0 fallan, 0 salteados** (175 s, Python 3.12.4).
 
 | Archivo | Tests | Qué cubre |
 |---|---|---|
 | `tests/test_fenotipo.py` | 117 | Etapa 2, VZ-01 a VZ-05 y VZ-07, oráculo |
+| `tests/test_variantes.py` | 39 | Punto 7: VZ-14 (tres partes), VZ-15, réplicas, guardas de alineación, huella, persona sin genotipo y V > h² |
 | `tests/test_lineas_base.py` | 80 | Etapa 3: línea base 2, modelo completo, g permutado, forma de los modelos, sólo entrenamiento, convergencia |
 | `tests/test_poblacion.py` | 38 | Efectos poblacionales y referencias |
 | `tests/test_generador.py` | 36 | VZ-01 a VZ-05 y VZ-07 sobre `genotipo.py` (su retiro se decide en la Etapa 8) |
@@ -167,6 +201,9 @@ Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converge
 
 ## Desvíos respecto de la entrega y del brief
 
+- **Decisión tomada sin consultar (punto 7): en cada réplica se vuelven a sortear las copias de las personas simuladas.** Las de las reales son siempre las del archivo. La entrega no lo dice. Lo resolví así porque cada réplica regenera todo lo que depende del azar del módulo, como pide el paquete. Si se prefiere que las simuladas tengan un genotipo fijo, como si fueran personas con genoma, es un cambio de pocas líneas: sortearlas con una semilla que no dependa de la réplica.
+- **Cambié la tolerancia de un test que había escrito yo**, `test_columna_g_elige_el_puntaje_del_completo`, de 10⁻⁴ a 10⁻³. Con la g nueva, duplicar g dejó el coeficiente en la mitad con un error relativo de 2·10⁻⁴. Diagnóstico: con un criterio de parada más estricto en L-BFGS-B (ftol = 10⁻¹⁵), el error baja a 6·10⁻⁸, así que es la precisión con la que se detiene el optimizador. Equivale a unos 0,0003 en el coeficiente, mucho menos que su error típico (alrededor de 0,08). No es una tolerancia del brief.
+
 - **`ajustar` devuelve un objeto que guarda las iteraciones.** El brief dice que devuelve β y α; el objeto se desempaqueta así, como pide el brief. Hacía falta porque este informe tiene que reportar las iteraciones. También acepta `max_iteraciones`, que usa el test de no convergencia.
 - **`ajustar` controla que la primera columna de `X_sigma` sea la constante**, porque el punto de partida pone ahí el logaritmo del desvío.
 - **`lineas_base.py` se hizo en la semana del 9/11**, junto con `modelo.py`, como parte del punto 6. El plan del 29/10 lo ponía en la semana del 10/11.
@@ -218,4 +255,4 @@ Máximo de iteraciones sobre los 8 parámetros. Ningún ajuste dejó de converge
 
 ## Siguiente paso
 
-Punto 7: g = g_conocida + g_resto, VZ-14 y VZ-15, con los genotipos de `datos/`. La guarda de alineación ya pasó: el mayor desvío entre la frecuencia observada y la configurada es de 0,0049, con una tolerancia de 0,10.
+Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Necesita las preguntas abiertas 2, 3 y 4, y conviene responderlas antes de arrancar.
