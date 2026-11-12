@@ -266,10 +266,10 @@ Máximo de iteraciones sobre los 8 parámetros, medido después del punto 7. Nin
 
 | Punto | Qué se hizo | Commit |
 |---|---|---|
-| 1. Formato exacto del archivo para la calibración | **Ya cumplía, no hubo que regenerarlo.** Lo verifiqué sobre el archivo: las 10 columnas con esos nombres y en ese orden, 160.000 filas sólo de `calibracion` y `prueba`, `individuo_id` entero en todas las filas y los ocho nombres de rasgo exactos. Un test nuevo fija ese contrato y que los ids se escriban como enteros. Huella sin cambios: `16ad6332…`. **Estaba listo desde el 9/11, así que no hace falta el plan B** | este |
-| 2. Jitter y HNR | Salvedad del JSON reemplazada por el texto definitivo, y las cifras de Campos dejan de figurar como pendientes. Corregí también `parametros.py` y `decisiones-fase1.md`: decían "sin diferencia entre MZ y DZ", que el estudio no permite afirmar. Configuración 1.3, sin cambios de valores | este |
+| 1. Formato exacto del archivo para la calibración | **Ya cumplía, no hubo que regenerarlo.** Lo verifiqué sobre el archivo: las 10 columnas con esos nombres y en ese orden, 160.000 filas sólo de `calibracion` y `prueba`, `individuo_id` entero en todas las filas y los ocho nombres de rasgo exactos. Un test nuevo fija ese contrato y que los ids se escriban como enteros. Huella sin cambios: `16ad6332…`. **Estaba listo desde el 9/11, así que no hace falta el plan B** | `a0c5ef5` |
+| 2. Jitter y HNR | Salvedad del JSON reemplazada por el texto definitivo, y las cifras de Campos dejan de figurar como pendientes. Corregí también `parametros.py` y `decisiones-fase1.md`: decían "sin diferencia entre MZ y DZ", que el estudio no permite afirmar. Configuración 1.3, sin cambios de valores | `a0c5ef5` |
 | 3. Paquete 2.2.1 | **Pendiente: el zip no llegó.** No está en el repo ni en Descargas. Las copias de la 2.2 siguen hasta tener la 2.2.1 | — |
-| 4. VZ-15 | La referencia del test es ahora el segundo nivel declarado de f0_medio (0,006086), leído de la configuración. Los valores medidos no cambian | este |
+| 4. VZ-15 | La referencia del test es ahora el segundo nivel declarado de f0_medio (0,006086), leído de la configuración. Los valores medidos no cambian | `a0c5ef5` |
 | 5. Calibración | Nada que hacer: el módulo no tiene q̂, intervalos conformales ni cálculo de cobertura. La forma congelada de la sigma (logaritmo de sigma con sexo y edad centrada) es la que ya usa `lineas_base.py`: `X_sigma` = 1, sexo, edad_c | — |
 
 ## Siguiente paso
