@@ -1,6 +1,6 @@
 # Avance del bloque 2 — módulo de Voz (desde el 9/11)
 
-**Última actualización:** 12/11/2026 · **Estado:** puntos 1 a 7 de la entrega del 9/11 hechos, y la actualización del 10/11 atendida (ver al final). Siguen el 8 (recuperación) y el 9 (análisis de dos niveles).
+**Última actualización:** 12/11/2026 · **Estado:** puntos 1 a 7 de la entrega del 9/11 hechos, y la actualización del 10/11 atendida completa, incluido el paquete 2.2.1 (ver al final). Siguen el 8 (recuperación) y el 9 (análisis de dos niveles).
 
 Informe pedido por el "Brief para IA programadora — prototipo autónomo del módulo de Voz", para que Diego se lo pase al manager y a Claude. Se actualiza al cerrar cada semana. Sirve para que los documentos del grupo queden sincronizados con el código: lo que cambió en el repositorio está en "Estado de cada paso" y en "Decisiones consultadas"; lo que hay que decidir, en "Preguntas abiertas".
 
@@ -268,10 +268,10 @@ Máximo de iteraciones sobre los 8 parámetros, medido después del punto 7. Nin
 |---|---|---|
 | 1. Formato exacto del archivo para la calibración | **Ya cumplía, no hubo que regenerarlo.** Lo verifiqué sobre el archivo: las 10 columnas con esos nombres y en ese orden, 160.000 filas sólo de `calibracion` y `prueba`, `individuo_id` entero en todas las filas y los ocho nombres de rasgo exactos. Un test nuevo fija ese contrato y que los ids se escriban como enteros. Huella sin cambios: `16ad6332…`. **Estaba listo desde el 9/11, así que no hace falta el plan B** | `a0c5ef5` |
 | 2. Jitter y HNR | Salvedad del JSON reemplazada por el texto definitivo, y las cifras de Campos dejan de figurar como pendientes. Corregí también `parametros.py` y `decisiones-fase1.md`: decían "sin diferencia entre MZ y DZ", que el estudio no permite afirmar. Configuración 1.3, sin cambios de valores | `a0c5ef5` |
-| 3. Paquete 2.2.1 | **Pendiente: el zip no llegó.** No está en el repo ni en Descargas. Las copias de la 2.2 siguen hasta tener la 2.2.1 | — |
+| 3. Paquete 2.2.1 | **Hecho el 12/11.** Comparado archivo por archivo con la 2.2, sólo cambian `power_gradiente.py` y el número de versión: `predictions.py`, `compare.py`, `spine.py`, el panel y la cohorte son idénticos. Suite del paquete: 43 pasan y 16 salteados. Borré el zip 2.2 del repo y su copia extraída. Las copias que hay en Descargas (2.1 y 2.2) no las toqué, porque están fuera del proyecto. El `.meta.json` del CSV ahora dice 2.2.1; la huella del CSV no cambió | ver abajo |
 | 4. VZ-15 | La referencia del test es ahora el segundo nivel declarado de f0_medio (0,006086), leído de la configuración. Los valores medidos no cambian | `a0c5ef5` |
 | 5. Calibración | Nada que hacer: el módulo no tiene q̂, intervalos conformales ni cálculo de cobertura. La forma congelada de la sigma (logaritmo de sigma con sexo y edad centrada) es la que ya usa `lineas_base.py`: `X_sigma` = 1, sexo, edad_c | — |
 
 ## Siguiente paso
 
-Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Para arrancarlo necesito respuesta a las preguntas abiertas 2, 3, 4 y 8. La 1, la 5 y la 7 no lo frenan. Para la 2.2.1 hace falta el zip.
+Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Para arrancarlo necesito respuesta a las preguntas abiertas 2, 3, 4 y 8. La 1, la 5 y la 7 no lo frenan.

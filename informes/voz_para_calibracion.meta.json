@@ -48,7 +48,7 @@
   "semilla_base": 20261019,
   "semillas": "20261019 + replica",
   "versiones": {
-    "anima_spine": "2.2",
+    "anima_spine": "2.2.1",
     "numpy": "2.5.4",
     "pandas": "3.0.6",
     "python": "3.12.4"

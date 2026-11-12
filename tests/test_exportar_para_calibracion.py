@@ -98,7 +98,7 @@ def test_escribe_csv_y_meta(datos, tmp_path):
     assert meta["filas"] == 160_000 and meta["replicas"] == list(range(20))
     assert meta["cohorte"]["version"] == "2.0"
     assert meta["semilla_base"] == SEMILLA
-    assert meta["versiones"]["anima_spine"] == "2.2" and meta["versiones"]["numpy"] == np.__version__
+    assert meta["versiones"]["anima_spine"] == "2.2.1" and meta["versiones"]["numpy"] == np.__version__
     assert meta["nivel_declarado"]["nivel"] == "caso_base"
     assert meta["nivel_declarado"]["valores"] == NIVELES.de("caso_base")
     assert meta["nivel_declarado"]["version"] == NIVELES.version

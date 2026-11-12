@@ -157,7 +157,7 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
 - **10/11 — Actualización de Diego:**
   - **Contrato congelado del archivo para la calibración:** las 10 columnas `replica, semilla, dominio, sexo, individuo_id, particion, rasgo, y_real, mu_oraculo, sigma_oraculo`, 160.000 filas (sólo calibración y prueba), `individuo_id` entero y los ocho nombres de rasgo fijos. El archivo del 9/11 ya cumplía.
   - **Jitter y HNR:** las cifras de Campos et al. (2024) están verificadas contra su tabla 5 (46 pares MZ; 0,374, IC de 0,106 a 0,591, y 0,366, IC de 0,097 a 0,585; p = 0,004). Su grupo DZ es de 10 pares y no distingue genética de ambiente compartido. Salvedad con el texto definitivo (configuración 1.3).
-  - **Paquete 2.2.1:** corrige `power_gradiente.py` (el ancla facial de 0,079 no es un techo). Hay que adoptarlo y borrar las copias de la 2.2; no toca `predictions.py`, `compare.py` ni la cohorte.
+  - **Paquete 2.2.1:** corrige `power_gradiente.py` (el ancla facial de 0,079 no es un techo); no toca `predictions.py`, `compare.py` ni la cohorte. Adoptado el 12/11, con las copias de la 2.2 del proyecto borradas.
   - **VZ-15:** el valor exacto es 0,006086, no "alrededor de 0,0062".
   - **Calibración:** no se construye; la capa es de otra persona y entra en el paquete 2.3. La forma de la sigma de Voz quedó congelada: logaritmo de sigma con sexo y edad centrada, la del modelo heterocedástico. Puede caer una calibración provisoria a fin de noviembre (unas 6 horas); no se empieza ni se deja andamiaje.
 

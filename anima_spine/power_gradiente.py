@@ -1,11 +1,25 @@
-"""¿Qué N hace falta para demostrar el escalón Rostro - Voz?
+"""¿Qué N hace falta para separar un dominio de otro?
 
-El escalón de abajo del gradiente (cualquiera de los dos contra
-Temperamento) se detecta con poco N, porque la diferencia es grande. El de
-arriba es el problema: Rostro y Voz están cerca entre sí, y si no se puede
-distinguir uno de otro, la hipótesis de TRES niveles queda demostrada a
-medias. Este cálculo es el que llevó al grupo a formular la hipótesis en dos
-niveles (22/10/2026): Rostro - Voz se informa, pero no se afirma.
+ADVERTENCIA (corregido el 9/11/2026). Hasta esa fecha este módulo anclaba
+el dominio Rostro en 0,079, tratándolo como un techo de heredabilidad. No
+lo es: es la varianza que explican las variantes ya identificadas en el
+rasgo más favorable. De esa confusión salía una brecha con Voz de 0,0083 y
+una potencia de 0,15 a 0,26 con 500 personas de prueba, que es el número
+que el documento integrado citaba en la sección 5.4 como razón de la
+formulación en dos niveles.
+
+Con las dos clases de cantidad separadas (sección 6.8 del documento
+integrado), la brecha entre Rostro y Voz es de 0,159 en el caso base y de
+0,043 en el segundo nivel, y el contraste alcanza potencia 1,00 con 500
+personas de prueba en los dos. **La razón para no afirmar el contraste
+Rostro - Voz no es la potencia.** Es que el ordenamiento entre dominios es
+una propiedad de las fuentes publicadas y de cómo midió cada una, no del
+sistema que se construye. El contraste que sí falla por potencia es Voz
+contra Temperamento, porque sus heredabilidades por variantes comunes son
+equivalentes.
+
+Desde el 3/11/2026 ningún contraste entre dominios se afirma: ver
+`compare.CONTRASTES_AFIRMADOS`, que es la tupla vacía.
 
 Esto no es un bootstrap sobre un dataset: es un estudio de características
 operativas. Para cada combinación de N y de brecha verdadera, simula muchos
@@ -22,21 +36,47 @@ import argparse
 
 import numpy as np
 
-# Techo publicado para morfología facial (Xiong et al., 2025: hasta 7,9 %
-# de varianza por rasgo). Se usa como ΔR² verdadero del dominio Rostro.
-# ATENCIÓN (decisión abierta 2 del documento integrado): en la fuente es el
-# máximo de un rasgo, y acá se aplica a las 28 componentes a la vez. Si el
-# valor real es menor, la brecha con Voz se achica todavía más.
-H2_ROSTRO = 0.079
+# Anclas del dominio Rostro, en las dos clases de cantidad que su fuente
+# informa (Xiong et al., 2025). La distinción se incorporó el 2/11/2026.
+#   Caso base: heredabilidad por variantes comunes, 0,23 de media, rango
+#   de 0,06 a 0,36, por LD score regression sobre los 514 rasgos.
+#   Segundo nivel: lo que explican las 253 variantes identificadas, 0,045
+#   para la cara completa y hasta 0,079 en el rasgo más favorable.
+# El 0,079 queda como sensibilidad declarada, no como techo. Aplicado a las
+# 28 componentes a la vez es generoso respecto de la segunda cantidad, cuyo
+# valor de cara completa es 0,045, y conservador respecto de la primera.
+H2_ROSTRO_CASO_BASE = 0.23
+H2_ROSTRO_SEGUNDO_NIVEL = 0.045
+H2_ROSTRO_SENSIBILIDAD = 0.079
 
-# h² de los 8 parámetros de Voz con la regla agregada de cinco vocales
-# (Gisladottir et al., 2023, Tabla S6; jitter y hnr: 0,05 conservador).
-# Promedio 0,0707: brecha esperada con Rostro de 0,0083.
+# Dominio de referencia que usa `potencia`. Queda en el caso base, que es
+# la cantidad adoptada el 3/11/2026.
+H2_ROSTRO = H2_ROSTRO_CASO_BASE
+
+# Caso base de los 8 parámetros de Voz, con la regla agregada de cinco
+# vocales (Gisladottir et al., 2023, Tabla S6). Jitter y HNR valen 0,05 por
+# decisión declarada del proyecto: no tienen heredabilidad SNP publicada y
+# ese valor es una cota superior generosa, elegida para no dar por supuesto
+# el resultado nulo que el módulo espera encontrar en ellos.
+# Promedio 0,0707. Brecha con el caso base de Rostro: 0,159.
+#
+# ATENCIÓN: estos ocho valores viven también en la configuración del módulo
+# Vocal. Son la misma cantidad en dos lugares. Si cambian allá, hay que
+# cambiarlos acá, porque el control de literales del módulo no alcanza a
+# este paquete.
 H2_VOZ_REAL = (0.1027, 0.0410, 0.0619, 0.1353, 0.0644, 0.0606, 0.0500, 0.0500)
 
-# Brechas a evaluar: cuánto menos informativo es Voz que Rostro. Incluye las
-# brechas chicas (0,005 a 0,010), que son las compatibles con los valores
-# publicados.
+# Segundo nivel del dominio Vocal: lo que recuperan las tres variantes
+# publicadas, por parámetro, en el mismo orden que H2_VOZ_REAL. Calculado
+# como 2pq·beta² con las frecuencias por subpoblación de 1000 Genomes
+# ponderadas por la composición de la cohorte 2.0. Promedio 0,001475.
+H2_VOZ_SEGUNDO_NIVEL = (0.006086, 0.0, 0.002278, 0.003436, 0.0, 0.0, 0.0, 0.0)
+
+# Brechas a evaluar. Las chicas (0,005 a 0,015) ya no corresponden a
+# ninguna lectura coherente de las fuentes: quedan como sensibilidad, para
+# mostrar a partir de qué brecha el contraste deja de ser demostrable. Las
+# dos brechas vigentes son 0,159 en el caso base y 0,043 en el segundo
+# nivel, las dos con potencia 1,00 a 500 personas de prueba.
 BRECHAS = (0.005, 0.008, 0.010, 0.015, 0.025, 0.035, 0.045)
 
 # Tamaños de la partición de PRUEBA (no de la cohorte entera).
