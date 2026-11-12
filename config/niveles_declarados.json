@@ -1,18 +1,19 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "fijado": "2026-11-09",
   "nota": "Niveles declarados del modulo Vocal. Se fijan antes de la primera corrida y no se eligen mirando resultados.",
   "cambios": {
     "1.1": "2026-11-09: el segundo nivel se calcula por subpoblacion, ponderado por la composicion de la cohorte, con la misma p que centra g_conocida. Se corrige la cita de Campos et al. (2024). El caso base no cambia.",
-    "1.2": "2026-11-09: el segundo nivel vuelve a ser entrada (mismos valores que la 1.1), con la composicion de la cohorte con la que se calculo registrada al lado. El cargador no recalcula: verifica que la cohorte cargada tenga esa composicion. Salvedad de jitter y HNR reescrita."
+    "1.2": "2026-11-09: el segundo nivel vuelve a ser entrada (mismos valores que la 1.1), con la composicion de la cohorte con la que se calculo registrada al lado. El cargador no recalcula: verifica que la cohorte cargada tenga esa composicion. Salvedad de jitter y HNR reescrita.",
+    "1.3": "2026-11-10: salvedad de jitter y HNR con el texto definitivo; las cifras de Campos et al. (2024) quedan verificadas. Ningun valor cambia."
   },
   "fuentes": {
     "caso_base": "Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026",
     "segundo_nivel": "Gisladottir et al. (2023), Tabla S8: suma sobre subpoblaciones de w_s * 2 * p_s * (1 - p_s) * beta^2, con las frecuencias por subpoblacion de 1000 Genomes fase 3 y w_s la composicion registrada en composicion_cohorte. Calculado una vez con scripts/calcular_segundo_nivel.py"
   },
   "salvedades": {
-    "jitter_hnr": "Jitter y HNR no tienen una heredabilidad SNP publicada. La evidencia de gemelos es debil y apunta a un valor pequeno o nulo: Van Lierde et al. (2005) no obtuvieron correlaciones significativas, y Campos et al. (2024) encuentran que las gemelas monocigoticas no se diferencian de las dicigoticas en estos dos parametros. Se les asigna 0,05 como cota superior declarada por el proyecto, deliberadamente generosa, para no dar por supuesto el resultado nulo que el modulo espera encontrar.",
-    "campos_2024": "Las cifras atribuidas a Campos et al. (2024) en parametros.py y decisiones-fase1.md (0,374 para jitter, 0,366 para HNR y sus intervalos) y las iniciales de la primera autora estan pendientes de verificar con el articulo a la vista (Diego, semana del 9/11)."
+    "jitter_hnr": "Jitter y HNR no tienen una heredabilidad SNP publicada, y la evidencia de gemelos disponible es debil. Van Lierde et al. (2005) no obtuvieron correlaciones significativas para jitter ni shimmer, y Campos et al. (2024) informan una correlacion intraclase intra-par significativa pero debil en 46 pares de gemelas monocigoticas: 0,374 para jitter (IC 95 % de 0,106 a 0,591) y 0,366 para HNR (de 0,097 a 0,585), las dos con p = 0,004. Su grupo dicigotico es de 10 pares y no permite distinguir si esa similitud es genetica o de ambiente compartido. Ninguna de las dos fuentes estima una heredabilidad. Se asigna 0,05 como cota superior declarada por el proyecto, deliberadamente generosa, para no dar por supuesto el resultado nulo que el modulo espera encontrar en estos dos parametros.",
+    "campos_2024": "Cifras de Campos et al. (2024) verificadas por Diego contra la tabla 5 del articulo el 10/11: exactas. En el texto se cita Campos et al. (2024), como el encabezado de pagina de la revista."
   },
   "niveles": {
     "caso_base": {

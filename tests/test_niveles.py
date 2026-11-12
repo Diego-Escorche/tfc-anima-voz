@@ -156,7 +156,7 @@ def test_sin_cohorte_carga_y_avisa(tmp_path, niveles):
 
 def test_describir_dice_nivel_archivo_version_y_fecha(niveles):
     texto = niveles.describir("segundo_nivel")
-    for parte in ("segundo_nivel", "niveles_declarados.json", "version 1.2", "2026-11-09", "Tabla S8",
+    for parte in ("segundo_nivel", "niveles_declarados.json", "version 1.3", "2026-11-09", "Tabla S8",
                   "verificada"):
         assert parte in texto
 
@@ -165,7 +165,8 @@ def test_salvedad_de_jitter_y_hnr(niveles):
     salvedad = niveles.salvedades["jitter_hnr"]
     assert "Campos et al. (2024)" in salvedad and "Lima" not in salvedad
     assert "cota superior declarada" in salvedad and "S6" not in salvedad
-    assert "pendientes de verificar" in niveles.salvedades["campos_2024"]
+    assert "46 pares" in salvedad and "0,106 a 0,591" in salvedad and "0,097 a 0,585" in salvedad
+    assert "verificadas" in niveles.salvedades["campos_2024"]
 
 
 # --- El cargador rechaza archivos que no cierran -----------------------------

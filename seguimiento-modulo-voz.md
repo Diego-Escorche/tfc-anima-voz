@@ -1,6 +1,6 @@
 # Seguimiento — módulo de Voz
 
-**Última actualización:** 9 nov 2026
+**Última actualización:** 12 nov 2026
 **Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 9/11: Fases 1 y 2 completas. El bloque 2 arrancó el 9/11 con la entrega de Diego (paquete `anima_spine` 2.2 y cohorte 2.0); la Etapa 3, prevista para la semana del 3/11, quedó corrida a la semana del 9/11. Desde el 3/11 la hipótesis es la reformulada: por dominio, que el modelo recupera el nivel de señal declarado; ningún contraste entre dominios se afirma.
 
 **Riesgo principal:** que el código no arranque. Venía sin avance desde fines de septiembre; la semana 1 es a propósito el hito más barato.
@@ -154,6 +154,13 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **Jitter y HNR:** Campos et al. (2024) no encuentran diferencia entre gemelas MZ y DZ en estos dos parámetros, así que la evidencia apunta a un valor pequeño o nulo. El 0,05 es una cota superior declarada, deliberadamente generosa, para no meter a mano el resultado nulo que el módulo espera. Las cifras atribuidas a Campos (0,374, 0,366, los intervalos) y las iniciales de la primera autora quedan pendientes de verificar: Diego lee el artículo esta semana.
   - **Segundo nivel otra vez como entrada:** calcularlo al cargar haría que el nivel declarado se moviera en silencio con la composición de la cohorte. Los valores (0,006086, 0,003436, 0,002278; agregado 0,001475) son entrada, con la composición de la cohorte 2.0 y su huella registradas al lado. El cargador verifica la composición: si difiere, error con la subpoblación; si falta la cohorte, carga y el reporte lo avisa. Cambiar la composición pasa por la Tabla 7 del documento integrado, no por una línea de comando.
 
+- **10/11 — Actualización de Diego:**
+  - **Contrato congelado del archivo para la calibración:** las 10 columnas `replica, semilla, dominio, sexo, individuo_id, particion, rasgo, y_real, mu_oraculo, sigma_oraculo`, 160.000 filas (sólo calibración y prueba), `individuo_id` entero y los ocho nombres de rasgo fijos. El archivo del 9/11 ya cumplía.
+  - **Jitter y HNR:** las cifras de Campos et al. (2024) están verificadas contra su tabla 5 (46 pares MZ; 0,374, IC de 0,106 a 0,591, y 0,366, IC de 0,097 a 0,585; p = 0,004). Su grupo DZ es de 10 pares y no distingue genética de ambiente compartido. Salvedad con el texto definitivo (configuración 1.3).
+  - **Paquete 2.2.1:** corrige `power_gradiente.py` (el ancla facial de 0,079 no es un techo). Hay que adoptarlo y borrar las copias de la 2.2; no toca `predictions.py`, `compare.py` ni la cohorte.
+  - **VZ-15:** el valor exacto es 0,006086, no "alrededor de 0,0062".
+  - **Calibración:** no se construye; la capa es de otra persona y entra en el paquete 2.3. La forma de la sigma de Voz quedó congelada: logaritmo de sigma con sexo y edad centrada, la del modelo heterocedástico. Puede caer una calibración provisoria a fin de noviembre (unas 6 horas); no se empieza ni se deja andamiaje.
+
 ## Decisiones pendientes del grupo (bloquean)
 
 - [ ] Con qué criterio se eligen las h² en los tres módulos. Queda vinculado a las decisiones 2 y 3 del documento integrado; Rostro mantiene 7,9 % por ahora
@@ -193,6 +200,7 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 ## Reemplazado el 9/11
 
 - **Niveles declarados 1.1:** el segundo nivel se derivaba al cargar, con la composición de la cohorte cargada, y los valores del JSON eran control (tolerancia 0,0002). Desde la 1.2 son entrada y la composición se verifica.
+- **Salvedad de jitter y HNR (1.2):** "la evidencia de gemelos es débil y apunta a un valor pequeño o nulo… Campos et al. (2024) encuentran que las gemelas monocigóticas no se diferencian de las dicigóticas". Desde la 1.3, con el artículo verificado: su grupo DZ de 10 pares no permite distinguir genética de ambiente compartido.
 - **Salvedad de jitter y HNR (1.1):** "valor conservador de 0,05, apoyado en estudios de gemelos (Van Lierde et al., 2005; Campos et al., 2024)". Desde la 1.2, cota superior declarada; la evidencia apunta a un valor pequeño o nulo.
 - **Niveles declarados 1.0:** el segundo nivel era configurado, calculado con la frecuencia europea promedio (0,006160, 0,003433 y 0,002247). Desde la 1.1 es derivado por subpoblación y esos valores son control.
 

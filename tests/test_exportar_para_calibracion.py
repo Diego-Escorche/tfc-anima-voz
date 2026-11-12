@@ -59,6 +59,18 @@ def test_y_real_es_el_fenotipo_de_cada_replica(datos, cohorte, replica):
     assert np.array_equal(unido["y_real"].to_numpy(), unido["y"].to_numpy())
 
 
+def test_contrato_congelado_del_consumidor(datos, tmp_path):
+    """Contrato congelado el 10/11 por la capa de calibracion: nombres exactos, ids enteros."""
+    assert exportar.COLUMNAS == ["replica", "semilla", "dominio", "sexo", "individuo_id", "particion",
+                                 "rasgo", "y_real", "mu_oraculo", "sigma_oraculo"]
+    assert set(datos["rasgo"]) == {"f0_medio", "f0_variabilidad", "jitter", "hnr", "f1", "f2", "f3", "vtl"}
+    assert datos["individuo_id"].dtype.kind == "i"
+    ruta = tmp_path / "voz_para_calibracion.csv"
+    exportar.escribir(datos[datos["replica"] == 0], ruta, COHORTE)
+    ids = [linea.split(",")[4] for linea in ruta.read_text(encoding="utf-8").splitlines()[1:]]
+    assert all(i.isdigit() for i in ids)  # escrito como entero, no como 12.0
+
+
 def test_las_replicas_son_distintas(datos):
     a = datos.loc[datos["replica"] == 0, "y_real"].to_numpy()
     b = datos.loc[datos["replica"] == 1, "y_real"].to_numpy()

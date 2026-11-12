@@ -1,6 +1,6 @@
 # Avance del bloque 2 — módulo de Voz (desde el 9/11)
 
-**Última actualización:** 9/11/2026 · **Estado:** puntos 1 a 7 de la entrega del 9/11 hechos. Siguen el 8 (recuperación) y el 9 (análisis de dos niveles).
+**Última actualización:** 12/11/2026 · **Estado:** puntos 1 a 7 de la entrega del 9/11 hechos, y la actualización del 10/11 atendida (ver al final). Siguen el 8 (recuperación) y el 9 (análisis de dos niveles).
 
 Informe pedido por el "Brief para IA programadora — prototipo autónomo del módulo de Voz", para que Diego se lo pase al manager y a Claude. Se actualiza al cerrar cada semana. Sirve para que los documentos del grupo queden sincronizados con el código: lo que cambió en el repositorio está en "Estado de cada paso" y en "Decisiones consultadas"; lo que hay que decidir, en "Preguntas abiertas".
 
@@ -122,7 +122,7 @@ El CSV no cambió con las versiones 1.1 y 1.2 de la configuración, porque el ca
 | VZ-14.1 | En las 503 reales, g_conocida igual a la suma calculada a mano desde el archivo, persona por persona | Idéntica en las tres variantes, en las réplicas 0 y 7 |
 | VZ-14.2 | En las simuladas, con 200.000 personas, frecuencia recuperada por subpoblación a menos de 0,01 de la configurada | Error máximo: 0,0025 (f0_medio), 0,0024 (f2), 0,0009 (f1) |
 | VZ-14.3 | g_conocida = 0 en los cinco sin variante, y Var(g) = h² en los ocho (tolerancia 0,01, la de VZ-01 a VZ-04) | Cero exacto. Var(g) con 200.000 personas: error máximo 0,0005 (jitter, 0,0505 contra 0,0500). La varianza esperada cierra exacta: V + (h² − V) = h² con error menor que 10⁻⁶ |
-| VZ-15 | Var(g_conocida) de f0_medio alrededor de 0,0062 (Di et al., 2024); parar si se va por más de un factor de dos | 0,00627 en la cohorte 2.0, 0,00608 con 200.000 personas y 0,00608 en las 503 reales solas |
+| VZ-15 | Var(g_conocida) de f0_medio cerca de 0,006086, el valor exacto con el centrado por subpoblación (actualización del 10/11; coincide con el 0,61 % de Di et al., 2024); parar si se va por más de un factor de dos | 0,00627 en la cohorte 2.0, 0,00608 con 200.000 personas y 0,00608 en las 503 reales solas |
 
 Var(g_conocida) en los otros dos parámetros, en la cohorte 2.0: f2 0,00344 (declarado 0,003436) y f1 0,00227 (declarado 0,002278).
 
@@ -134,7 +134,7 @@ Var(g_conocida) en los otros dos parámetros, en la cohorte 2.0: f2 0,00344 (dec
 
 ## Resultado del pytest completo
 
-**387 tests: 387 pasan, 0 fallan, 0 salteados** (175 s, Python 3.12.4).
+**388 tests: 388 pasan, 0 fallan, 0 salteados** (198 s, Python 3.12.4).
 
 | Archivo | Tests | Qué cubre |
 |---|---|---|
@@ -143,7 +143,7 @@ Var(g_conocida) en los otros dos parámetros, en la cohorte 2.0: f2 0,00344 (dec
 | `tests/test_lineas_base.py` | 80 | Etapa 3: línea base 2, modelo completo, g permutado, forma de los modelos, sólo entrenamiento, convergencia |
 | `tests/test_poblacion.py` | 38 | Efectos poblacionales y referencias |
 | `tests/test_generador.py` | 36 | VZ-01 a VZ-05 y VZ-07 sobre `genotipo.py` (su retiro se decide en la Etapa 8) |
-| `tests/test_exportar_para_calibracion.py` | 19 | Archivo para la capa de calibración: forma, réplicas, sexo, metadatos y once rechazos |
+| `tests/test_exportar_para_calibracion.py` | 20 | Archivo para la capa de calibración: contrato congelado del 10/11, forma, réplicas, sexo, metadatos y once rechazos |
 | `tests/test_niveles.py` | 16 | Configuración de los niveles, verificación de la composición, test de literales |
 | `tests/test_parametros.py` | 15 | h² contra la tabla S6 |
 | `tests/test_modelo.py` | 10 | `modelo.py` con datos simulados, gradiente analítico contra numérico, error de convergencia |
@@ -254,10 +254,24 @@ Máximo de iteraciones sobre los 8 parámetros, medido después del punto 7. Nin
    - Si se prefiere que las simuladas tengan un genotipo fijo, es un cambio chico, pero cambia el CSV para Tomás.
 
 6. **Pendiente de Diego, ya anotado:**
-   - verificar contra el artículo las cifras atribuidas a Campos et al. (0,374, 0,366 y los dos intervalos) y las iniciales de la primera autora;
-   - la nota de jitter y HNR en el Anexo B del integrado y en el individual;
+   - ~~verificar las cifras de Campos et al. y las iniciales~~: cerrado el 10/11, las cifras son exactas;
+   - la nota de jitter y HNR en el Anexo B del integrado y en el individual, con el texto definitivo del 10/11;
    - los porcentajes que se mueven: 0,61 % en f0_medio y 0,23 % en f1.
+
+7. **"Estas once" columnas, pero la lista trae diez** (actualización del 10/11, punto 1). El archivo tiene exactamente las diez listadas, en ese orden. Si falta una undécima, hay que decir cuál.
+
+8. **¿`metricas.py` lleva la función de cobertura?** La actualización del 10/11 dice "nada de q̂, intervalos conformales ni cobertura en tu código". Pero la Etapa 5 del brief pide `cobertura(y, lo, hi)` en `metricas.py`, y la Etapa 4 hace que VZ-10 se informe desde el módulo. Mi lectura es que la cobertura la calcula el paquete (`predictions.cobertura_promedio` y `fila_barrido`) y `metricas.py` queda sólo con ΔR², CRPS y bootstrap. Necesito que lo confirmen antes de escribir `metricas.py`, que es parte del punto 8.
+
+## Actualización del 10/11 (atendida el 12/11)
+
+| Punto | Qué se hizo | Commit |
+|---|---|---|
+| 1. Formato exacto del archivo para la calibración | **Ya cumplía, no hubo que regenerarlo.** Lo verifiqué sobre el archivo: las 10 columnas con esos nombres y en ese orden, 160.000 filas sólo de `calibracion` y `prueba`, `individuo_id` entero en todas las filas y los ocho nombres de rasgo exactos. Un test nuevo fija ese contrato y que los ids se escriban como enteros. Huella sin cambios: `16ad6332…`. **Estaba listo desde el 9/11, así que no hace falta el plan B** | este |
+| 2. Jitter y HNR | Salvedad del JSON reemplazada por el texto definitivo, y las cifras de Campos dejan de figurar como pendientes. Corregí también `parametros.py` y `decisiones-fase1.md`: decían "sin diferencia entre MZ y DZ", que el estudio no permite afirmar. Configuración 1.3, sin cambios de valores | este |
+| 3. Paquete 2.2.1 | **Pendiente: el zip no llegó.** No está en el repo ni en Descargas. Las copias de la 2.2 siguen hasta tener la 2.2.1 | — |
+| 4. VZ-15 | La referencia del test es ahora el segundo nivel declarado de f0_medio (0,006086), leído de la configuración. Los valores medidos no cambian | este |
+| 5. Calibración | Nada que hacer: el módulo no tiene q̂, intervalos conformales ni cálculo de cobertura. La forma congelada de la sigma (logaritmo de sigma con sexo y edad centrada) es la que ya usa `lineas_base.py`: `X_sigma` = 1, sexo, edad_c | — |
 
 ## Siguiente paso
 
-Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Para arrancarlo necesito respuesta a las preguntas abiertas 2, 3 y 4. La 1 y la 5 no lo frenan.
+Punto 8: `recuperacion_voz.csv` y el criterio de recuperación. Para arrancarlo necesito respuesta a las preguntas abiertas 2, 3, 4 y 8. La 1, la 5 y la 7 no lo frenan. Para la 2.2.1 hace falta el zip.

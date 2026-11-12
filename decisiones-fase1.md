@@ -84,14 +84,16 @@ Lierde et al. 2005 (Journal of Voice) explícitamente NO obtuvo correlaciones
 significativas para jitter ni shimmer en gemelos monocigóticos, mientras que
 Campos et al. 2024 (Social Sciences & Humanities Open, 10, 101062;
 gemelas brasileras) reporta correlaciones intra-par débiles
-pero significativas (ICC 0.374 para jitter, 0.366 para HNR; **cifras pendientes
-de verificar con el artículo a la vista**, igual que los intervalos y las
-iniciales de la primera autora). Ninguno de los dos da un h²-SNP.
+pero significativas en 46 pares de gemelas monocigóticas (tabla 5): ICC 0.374
+para jitter (IC 95 % de 0.106 a 0.591) y 0.366 para HNR (de 0.097 a 0.585),
+las dos con p = 0.004. Verificado contra el artículo por Diego el 10/11. Ninguno
+de los dos da un h²-SNP. En el texto se cita **Campos et al. (2024)**, como el
+encabezado de página de la revista ("P. Bruna Campos et al.").
 
-**Lectura corregida (9/11).** Campos et al. no encuentran diferencia entre
-gemelas monocigóticas y dicigóticas en jitter ni en HNR (sólo en F1), así que
-esas correlaciones no son evidencia de componente genético: pueden ser ambiente
-compartido. La evidencia apunta a un valor pequeño o nulo. El 0,05 es una
+**Lectura corregida (10/11).** El grupo dicigótico de Campos et al. es de 10
+pares, con intervalos de alrededor de −0,6 a +0,8, así que no permite distinguir
+si la similitud de las monocigóticas es genética o de ambiente compartido.
+Ninguna de las dos fuentes estima una heredabilidad. El 0,05 es una
 **cota superior declarada por el proyecto**, deliberadamente generosa, para no
 dar por supuesto el resultado nulo que el módulo espera encontrar: con 0,05 hay
 señal que el sistema podría recuperar si estuviera, y un ΔR² nulo pasa a ser un
