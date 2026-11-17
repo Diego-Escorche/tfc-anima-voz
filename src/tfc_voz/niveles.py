@@ -29,6 +29,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
+from anima_spine import predictions
 from tfc_voz.cohorte import leer_cohorte
 
 RAIZ = Path(__file__).resolve().parents[2]
@@ -71,6 +72,7 @@ class NivelesDeclarados:
     niveles: dict             # {nivel: {parametro: valor}}
     agregados_esperados: dict
     variantes: tuple
+    criterio_recuperacion: dict  # nivel, linea_base, tolerancia (None hasta la simulacion del nulo), estado
     composicion_cohorte: dict  # version, sha256_csv, n y conteos de la cohorte de referencia
     verificacion_cohorte: str  # que paso con la verificacion de la composicion
     ruta: Path
@@ -151,6 +153,7 @@ def cargar(ruta=RUTA, cohorte=None, ruta_cohorte=RUTA_COHORTE):
         variantes=tuple(Variante(v["rs"], v["parametro"], v["alelo_efecto"], float(v["beta"]),
                                  {k: float(f) for k, f in v["frecuencias"].items()})
                         for v in datos["variantes"]),
+        criterio_recuperacion=dict(datos["criterio_recuperacion"]),
         composicion_cohorte=registrada,
         verificacion_cohorte=verificacion,
         ruta=ruta,
@@ -179,6 +182,14 @@ def _validar(nd):
         esperado = nd.agregados_esperados[nivel]
         if abs(nd.agregado(nivel) - esperado) > TOLERANCIA_REDONDEO:
             raise ValueError(f"{nivel}: el agregado da {nd.agregado(nivel):.6f}, se esperaba {esperado}")
+    criterio = nd.criterio_recuperacion
+    if criterio["nivel"] not in nd.niveles:
+        raise ValueError(f"criterio_recuperacion: nivel {criterio['nivel']!r} desconocido")
+    if criterio["linea_base"] not in predictions.LINEAS_BASE:
+        raise ValueError(f"criterio_recuperacion: linea base {criterio['linea_base']!r} desconocida")
+    tolerancia = criterio["tolerancia"]
+    if tolerancia is not None and not (math.isfinite(tolerancia) and tolerancia > 0):
+        raise ValueError(f"criterio_recuperacion: tolerancia {tolerancia} no es positiva")
     c = nd.composicion_cohorte
     _validar_conteos(c)
     for var in nd.variantes:

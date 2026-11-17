@@ -1,11 +1,12 @@
 {
-  "version": "1.3",
+  "version": "1.4",
   "fijado": "2026-11-09",
   "nota": "Niveles declarados del modulo Vocal. Se fijan antes de la primera corrida y no se eligen mirando resultados.",
   "cambios": {
     "1.1": "2026-11-09: el segundo nivel se calcula por subpoblacion, ponderado por la composicion de la cohorte, con la misma p que centra g_conocida. Se corrige la cita de Campos et al. (2024). El caso base no cambia.",
     "1.2": "2026-11-09: el segundo nivel vuelve a ser entrada (mismos valores que la 1.1), con la composicion de la cohorte con la que se calculo registrada al lado. El cargador no recalcula: verifica que la cohorte cargada tenga esa composicion. Salvedad de jitter y HNR reescrita.",
-    "1.3": "2026-11-10: salvedad de jitter y HNR con el texto definitivo; las cifras de Campos et al. (2024) quedan verificadas. Ningun valor cambia."
+    "1.3": "2026-11-10: salvedad de jitter y HNR con el texto definitivo; las cifras de Campos et al. (2024) quedan verificadas. Ningun valor cambia.",
+    "1.4": "2026-11-17: bloque criterio_recuperacion, con la tolerancia sin fijar hasta la simulacion del nulo (respuesta del 12/11). Ningun nivel cambia."
   },
   "fuentes": {
     "caso_base": "Gisladottir et al. (2023), Tabla S6, con el criterio agregado de cinco vocales adoptado el 19/10/2026",
@@ -24,6 +25,12 @@
       "f0_medio": 0.006086, "f0_variabilidad": 0.0, "jitter": 0.0, "hnr": 0.0,
       "f1": 0.002278, "f2": 0.003436, "f3": 0.0, "vtl": 0.0
     }
+  },
+  "criterio_recuperacion": {
+    "nivel": "caso_base",
+    "linea_base": "ancestria sexo edad",
+    "tolerancia": null,
+    "estado": "pendiente: se fija una vez con la simulacion del nulo (scripts/simular_nulo.py), con lineas_base.py, ANTES de ver la corrida real. Nunca se ajusta despues de verla."
   },
   "agregados_esperados": { "caso_base": 0.070737, "segundo_nivel": 0.001475 },
   "composicion_cohorte": {

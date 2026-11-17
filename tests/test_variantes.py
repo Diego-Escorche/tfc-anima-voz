@@ -22,10 +22,12 @@ RAIZ = Path(__file__).resolve().parents[1]
 N = 200_000
 TOLERANCIA_FRECUENCIA = 0.01  # VZ-14, parte 2
 TOLERANCIA_H2 = 0.01          # VZ-14, parte 3: la misma de VZ-01 a VZ-04
-# VZ-15: el valor exacto con el centrado por subpoblacion es el segundo nivel
-# declarado de f0_medio, 0,006086 (actualizacion del 10/11; antes se citaba
-# "alrededor de 0,0062"). Coincide con el 0,61 % de Di et al. (2024) para un
-# puntaje validado fuera de la muestra de descubrimiento.
+# VZ-15: la referencia es el segundo nivel declarado de f0_medio, 0,006086 (el
+# valor exacto con el centrado por subpoblacion; actualizacion del 10/11), y
+# nada mas. Que se parezca al 0,61 % de Di et al. (2024) es solo un control de
+# orden de magnitud: aquella cifra es el desempeno fuera de muestra de un
+# puntaje construido con todos los estadisticos resumen, no la varianza de una
+# variante (respuesta del 12/11).
 VZ15_REFERENCIA = NIVELES.de("segundo_nivel")["f0_medio"]
 VZ15_FACTOR = 2.0
 CON_VARIANTE = {v.parametro: v for v in NIVELES.variantes}

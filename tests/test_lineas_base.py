@@ -26,8 +26,22 @@ N = 200_000
 TOLERANCIA_MEDIA = 0.02       # d, b y b + q de la linea base 2 (como la Etapa 2)
 TOLERANCIA_DISPERSION = 0.03  # log r y c
 TOLERANCIA_ALFA0 = 0.02       # 1/2 log(1 - h2) del completo
-TOLERANCIA_G = 0.03           # coeficientes de g y g*sexo con c = 0
-TOLERANCIA_PERMUTADO = 0.02
+# Tolerancias de los coeficientes de g: 4 desvios entre corridas, fijadas una
+# vez el 17/11 (respuesta del 12/11, opcion a; las del brief, 0,02 y 0,03,
+# quedaban a 1-2,8 desvios y fallaban por azar con un modelo correcto). No se
+# recalculan: si el modelo cambia, se vuelven a medir y se declaran de nuevo.
+#   g permutado, 40 permutaciones por parametro, desvio del coeficiente de g:
+#     f0_medio 0,0106  f0_variabilidad 0,0188  jitter 0,0142  hnr 0,0140
+#     f1 0,0131  f2 0,0115  f3 0,0113  vtl 0,0132  -> 4 x 0,0188 = 0,075
+#   c = 0, 40 semillas de fenotipos (20261019 + 5000 + k), desvio de g / g*sexo:
+#     f0_medio 0,0090/0,0130  f0_variabilidad 0,0138/0,0180  jitter 0,0132/0,0171
+#     hnr 0,0129/0,0166  f1 0,0108/0,0143  f2 0,0075/0,0114  f3 0,0120/0,0166
+#     vtl 0,0107/0,0137  -> g: 4 x 0,0138 = 0,055; g*sexo: 4 x 0,0180 = 0,072
+# Una fuga de informacion pondria el coeficiente de g permutado cerca de 1:
+# 0,075 sigue a mas de un factor de diez de la falla que el test busca.
+TOLERANCIA_G = 0.055          # coeficiente de g con c = 0
+TOLERANCIA_G_SEXO = 0.072     # coeficiente de g*sexo con c = 0
+TOLERANCIA_PERMUTADO = 0.075
 
 # Los valores de prueba de la Etapa 2, definidos solo en los tests.
 VALORES_PRUEBA = dict(d=-2.0, r=0.8, c=0.1, b_mujer=-0.3, b_hombre=0.1, q_mujer=0.2, q_hombre=0.4)
@@ -131,7 +145,7 @@ def test_completo_con_c_0_recupera_g_y_g_por_sexo(ajustes_c0, p):
     beta = ajustes_c0[p.nombre][COMPLETO].beta
     g, g_sexo = beta[-3], beta[-2]
     assert abs(g - 1.0) < TOLERANCIA_G
-    assert abs(g_sexo - (VALORES_PRUEBA["r"] - 1.0)) < TOLERANCIA_G
+    assert abs(g_sexo - (VALORES_PRUEBA["r"] - 1.0)) < TOLERANCIA_G_SEXO
 
 
 @pytest.mark.parametrize("p", PARAMETROS, ids=lambda p: p.nombre)

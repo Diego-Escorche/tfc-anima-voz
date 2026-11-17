@@ -156,7 +156,7 @@ def test_sin_cohorte_carga_y_avisa(tmp_path, niveles):
 
 def test_describir_dice_nivel_archivo_version_y_fecha(niveles):
     texto = niveles.describir("segundo_nivel")
-    for parte in ("segundo_nivel", "niveles_declarados.json", "version 1.3", "2026-11-09", "Tabla S8",
+    for parte in ("segundo_nivel", "niveles_declarados.json", "version 1.4", "2026-11-09", "Tabla S8",
                   "verificada"):
         assert parte in texto
 

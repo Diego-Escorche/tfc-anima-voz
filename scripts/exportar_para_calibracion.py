@@ -62,6 +62,13 @@ NOTA_PUNTAJE = ("g = g_conocida + g_resto. En f0_medio, f1 y f2, g_conocida sale
                 "frecuencia de la subpoblacion; g_resto es simulado. En los otros cinco, g es enteramente "
                 "simulado. Reemplaza a la version con g enteramente simulado (huella b6f8d2d8...).")
 
+SORTEO_GENOTIPOS = ("Asimetria declarada (confirmada por Diego el 12/11): las 503 personas reales de 1000 Genomes "
+                    "aportan un genotipo fijo, el del archivo, igual en las 20 replicas; las 1.497 simuladas "
+                    "reciben un sorteo nuevo de sus copias en cada replica, con la semilla de la replica. La "
+                    "cohorte fija a la persona (id, subpoblacion, sexo, edad y particion); el genotipo de las "
+                    "simuladas es parte de la simulacion del modulo, como g_resto, y promediar sobre su sorteo "
+                    "hace que el promedio de las 20 replicas converja al nivel declarado.")
+
 
 def armar_replica(cohorte, replica, parametros=PARAMETROS, efectos=EFECTOS):
     """Filas de calibracion y prueba de una replica, con y real, media y desvio oraculo."""
@@ -137,6 +144,7 @@ def escribir(datos, ruta, ruta_cohorte):
             "valores": NIVELES.de(NIVEL),
         },
         "puntaje_genetico": NOTA_PUNTAJE,
+        "sorteo_genotipos": SORTEO_GENOTIPOS,
         "oraculo": "mu_oraculo = m + s * g y sigma_oraculo = s * sqrt(1 - h2): media y desvio verdaderos, "
                    "conocidos por diseno. No son predicciones de ningun modelo.",
     }
