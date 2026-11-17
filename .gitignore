@@ -1,19 +1,39 @@
-# Entorno virtual (se rehace con SETUP.md)
+# Entorno virtual (se rehace con la seccion 3 de model.md)
 .venv/
-
-# Corpus y datos descargados (VCTK pesa varios GB)
-data/
+venv/
+env/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+build/
+dist/
 
-# pytest
+# pytest y cobertura
 .pytest_cache/
+.coverage
+htmlcov/
 
-# Paquete de la columna vertebral, se copia descomprimido
+# Informes, archivos entregados y sus .meta.json: se conservan solo en disco
+# (pedido de Diego del 17/11). Los scripts los regeneran en informes/.
+informes/
+
+# Salidas del prototipo (Etapa 6 y Etapa 7 del brief)
+resultados/
+audios/
+
+# Datos descargados o corpus de audio (fuera de alcance)
+data/
+
+# Paquetes de la columna vertebral: se copian descomprimidos a anima_spine/
 *.zip
 
-# 160.000 filas (15 MB), se regenera con scripts/exportar_para_calibracion.py;
-# su huella queda en informes/voz_para_calibracion.meta.json
-informes/voz_para_calibracion.csv
+# Editores y sistema operativo
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

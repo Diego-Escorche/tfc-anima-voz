@@ -1,7 +1,9 @@
 # Módulo de Voz — Proyecto Anima (TFC)
 
-> **Si sos una IA leyendo esto:** este archivo es tu contexto completo. Leelo
-> entero antes de escribir código o proponer cambios. Contiene decisiones ya
+> **Si sos una IA leyendo esto:** las instrucciones, el entorno, las decisiones
+> y el seguimiento están en `model.md` (lo importa `CLAUDE.md`). Este README es
+> el contexto del proyecto: leelo entero antes de escribir código o proponer
+> cambios. Contiene decisiones ya
 > tomadas con su justificación — varias parecen "mejorables" a primera vista y
 > no lo son. La sección **Qué NO hacer** es la más importante.
 >
@@ -137,10 +139,9 @@ módulos.
 | `tests/test_setup.py` | Verifica que el entorno esté bien instalado |
 | `tests/test_parametros.py` | Contrasta las h² cargadas contra la S6 |
 | `tests/test_generador.py` | Casos VZ-01 a VZ-05 y VZ-07: recuperación de la h², permutación y 20 semillas |
-| `decisiones-fase1.md` | Justificación bibliográfica de cada h² y regla de lectura |
-| `seguimiento-modulo-voz.md` | Hitos del cronograma de 17 semanas |
-| `historico-vctk.md` | Lo que se hizo con audio real antes del 19/10 (fuera de alcance) |
-| `SETUP.md` | Instalación paso a paso |
+| `model.md` | Contexto para la IA: instrucciones, entorno, justificación de cada h², seguimiento e histórico de VCTK |
+| `CLAUDE.md` | Importa `model.md` para que Claude Code lo cargue solo |
+| `informes/` | Local, fuera de git: informes de avance y archivos entregados |
 
 ---
 
@@ -188,7 +189,7 @@ et al. 2022) con un factor 1/2 supuesto. Ese supuesto quedó descartado el
 dentro de cada sexo, **antes** de estimar h². O sea que estas h² están por
 encima de sexo, edad y altura, no incluidas en ellas.
 
-`decisiones-fase1.md` tiene la justificación completa de cada valor.
+La sección 4 de `model.md` tiene la justificación completa de cada valor.
 
 ---
 
@@ -234,7 +235,7 @@ genética.
   Salieron del alcance el 19/10/2026. La única síntesis de audio en alcance es
   la vocal sostenida con KlattGrid (parselmouth) del brief del prototipo.
 - **No busques ni descargues datasets de audio.** La validación contra audio
-  real salió del alcance el 19/10/2026 (ver `historico-vctk.md`).
+  real salió del alcance el 19/10/2026 (ver la sección 6 de `model.md`).
 - **No busques un dataset que empareje genotipo y voz de las mismas personas.**
   No existe públicamente. Eso está documentado como hallazgo científico del
   proyecto, no como una limitación a resolver.
@@ -273,26 +274,21 @@ implausibles en `ParametrosExtraidos.advertencias`.
 ## 9. Cómo correr las cosas
 
 ```bash
-# activar el entorno virtual primero (ver SETUP.md)
+# activar el entorno virtual primero (ver la sección 3 de model.md)
 
 python tests/test_setup.py                        # verificar instalación
 pytest                                            # todos los tests (~50 s)
 pytest -m "not lento"                             # sin VZ-07 (~3 s)
 python src/tfc_voz/parametros.py                  # ver el espacio de parámetros
 python src/tfc_voz/genotipo.py                    # generar cohorte de prueba
-python informes/generar_informe.py                # informe de estado en PDF
 ```
-
-El informe de estado lee el avance por fase de `seguimiento-modulo-voz.md`; el
-resto del texto se edita en la sección `CONTENIDO` del script antes de cada
-informe nuevo. Necesita además `requirements-informes.txt`.
 
 ---
 
 ## 10. Lo que sigue
 
 Cronograma de 150 horas en 17 semanas (~10 h por semana). El detalle está en
-`seguimiento-modulo-voz.md`.
+la sección 5 de `model.md`.
 
 | Fecha | Hito |
 |---|---|

@@ -24,7 +24,7 @@ calcular = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(calcular)
 # Los .py del modulo, tests incluidos: un test que escribe un nivel a mano
 # pasaria aunque la configuracion cambie.
-CARPETAS_DEL_MODULO = ("src/tfc_voz", "scripts", "informes", "tests")
+CARPETAS_DEL_MODULO = ("src/tfc_voz", "scripts", "tests")
 # Una linea con un nivel escrito a proposito se saltea si termina con esta
 # anotacion y un motivo.
 EXENCION = re.compile(r"#\s*nivel-literal-ok:\s*\S")
