@@ -1,6 +1,6 @@
 # Seguimiento — módulo de Voz
 
-**Última actualización:** 12 nov 2026
+**Última actualización:** 17 nov 2026
 **Estado general:** el alcance vigente es el del documento integrado del grupo. La síntesis de audio volvió al alcance: vocal sostenida con KlattGrid (parselmouth), VZ-08 vigente y VZ-09 retirado. La interfaz web la arma el grupo; el módulo expone `muestrear` y `sintetizar`. La validación contra audio real sigue afuera. El trabajo sigue el "Brief para IA programadora — prototipo autónomo del módulo de Voz", que manda sobre este archivo. Hecho al 9/11: Fases 1 y 2 completas. El bloque 2 arrancó el 9/11 con la entrega de Diego (paquete `anima_spine` 2.2 y cohorte 2.0); la Etapa 3, prevista para la semana del 3/11, quedó corrida a la semana del 9/11. Desde el 3/11 la hipótesis es la reformulada: por dominio, que el modelo recupera el nivel de señal declarado; ningún contraste entre dominios se afirma.
 
 **Riesgo principal:** que el código no arranque. Venía sin avance desde fines de septiembre; la semana 1 es a propósito el hito más barato.
@@ -39,15 +39,15 @@ Semana del 9/11, en el orden de la entrega de Diego del 9/11 (cada punto habilit
 - [x] 5. `informes/voz_para_calibracion.csv` sobre la cohorte 2.0 con las 20 réplicas: 160.000 filas, columnas nuevas `replica`, `semilla`, `dominio` y `sexo`; caso base y puntaje genético enteramente simulado, declarado en `voz_para_calibracion.meta.json`. Validación OK. Se regenera cuando entre el punto 7 (9/11)
 - [x] 6. Etapa 3: `modelo.py` (máxima verosimilitud normal, L-BFGS-B con gradiente analítico, error si no converge) y `lineas_base.py` (las dos líneas base y el modelo completo, sólo con entrenamiento). Los 24 modelos convergen sobre la cohorte 2.0, con 42 iteraciones como máximo. Tests de la Etapa 3 y de los ajustes del 29/10 en verde; el de g permutado es frágil (ver `informes/avance-bloque-2.md`) (9/11)
 - [x] 7. Variantes conocidas: `variantes.py` y g = g_conocida + g_resto en `fenotipo.py`, con los genotipos de `datos/` en las 503 personas reales y sorteados en las simuladas. VZ-14 (tres partes) y VZ-15 en verde: Var(g_conocida) de f0_medio 0,00627 en la cohorte 2.0 y 0,00608 con 200.000 personas, contra 0,0062. `voz_para_calibracion.csv` regenerado (9/11)
-- [ ] 8. `recuperacion_voz.csv` y criterio de recuperación (tolerancia 0,015, sobre el caso base)
+- [ ] 8. `recuperacion_voz.csv` y criterio de recuperación, sobre el caso base. **Parcial (17/11):** `metricas.py`, `replicas.py` y `recuperacion.py` hechos, y la simulación del nulo (200 × 20 réplicas, corrimiento del parcial de −0,0024 a −0,0037) en `informes/simulacion_nulo_voz.csv`. Falta que el grupo fije la tolerancia en la configuración y, recién después, la corrida oficial
 - [ ] 9. Análisis de dos niveles
 
 Plan por semanas del 29/10 (se reordena con el brief del 5/11):
 - [x] Semana del 3/11 (corrida a la del 9/11; hecha el 9/11) — Etapa 3: `modelo.py` (genérico, máxima verosimilitud normal; verifica la convergencia) y sus tests
 - [x] Semana del 10/11 (adelantada al 9/11) — `lineas_base.py`: las dos líneas base y el modelo completo, con los "Ajustes del 29/10" (definiciones compartidas con `fenotipo.py`, test de la línea base 2, test con g permutado)
-- [ ] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`, en un archivo nuevo, `replicas.py`, que se suma a la tabla de archivos del README
-- [ ] Semana del 17/11 — Etapa 5: `metricas.py`, sólo funciones y tests (cobertura, ΔR² total y parcial, CRPS, bootstrap pareado); VZ-11 a VZ-13 se corren en diciembre
-- [ ] Semana del 17/11 — control de integración: ΔR² parcial promedio de 20 réplicas a menos de 0,025 de la h² de cada parámetro
+- [x] Semana del 17/11 — tabla predictiva (16.000 filas, contrato v2 de Tomás) y `correr_replica`, en un archivo nuevo, `replicas.py`, que se suma a la tabla de archivos del README (en la Etapa 8) (17/11)
+- [x] Semana del 17/11 — Etapa 5: `metricas.py`, sólo funciones y tests (ΔR² total y parcial, CRPS, bootstrap pareado; sin cobertura, que la cuenta el paquete); VZ-11 a VZ-13 se corren en diciembre (17/11)
+- [ ] Semana del 17/11 — control de integración: reemplazado por el criterio de recuperación (12/11), ver el punto 8
 - [ ] Semana del 24/11 — adaptador de la Etapa 4 con datos oráculo, sólo si Diego pasó el contrato congelado y la v1 de la capa de Tomás está disponible; si no, pasa a diciembre
 - [ ] Modelo terminado y documentado para que Tomás lo adapte (semana del 24-30 nov)
 - [ ] Redacción adelantada: metodología y límites (el diseño no depende de resultados)
@@ -161,6 +161,15 @@ La capa de calibración tiene que ser agnóstica del modelo (recibe μ y σ, dev
   - **VZ-15:** el valor exacto es 0,006086, no "alrededor de 0,0062".
   - **Calibración:** no se construye; la capa es de otra persona y entra en el paquete 2.3. La forma de la sigma de Voz quedó congelada: logaritmo de sigma con sexo y edad centrada, la del modelo heterocedástico. Puede caer una calibración provisoria a fin de noviembre (unas 6 horas); no se empieza ni se deja andamiaje.
 
+- **12/11 — Respuestas de Diego al informe del bloque 2:**
+  - **Corrimiento del ΔR² parcial:** por encima con el modelo oráculo (lo que describe el README del paquete 2.2) y por debajo con el modelo estimado, que es el del módulo. La magnitud la da la simulación del nulo con `lineas_base.py`.
+  - **Un solo criterio:** el criterio de recuperación reemplaza al control de integración. Su tolerancia se lee de la configuración y se fija una vez con la simulación del nulo, ANTES de ver la corrida real, nunca después.
+  - **Tests de los coeficientes de g:** tolerancias de 4 desvíos, fijadas una vez con su derivación: 0,075 (g permutado), 0,055 (g con c = 0) y 0,072 (g · sexo con c = 0).
+  - **`replicas.py` y `metricas.py`:** adelantados al punto 8.
+  - **Genotipos de las simuladas:** se sortean de nuevo en cada réplica; las 503 reales tienen siempre los del archivo. La asimetría queda declarada en el `.meta.json` del CSV de calibración.
+  - **Cobertura:** no va en `metricas.py`; la cuenta el paquete. VZ-10 y el `lo`/`hi` al 90 % esperan a la capa de calibración.
+  - **Di et al. (2024):** sólo un control de orden de magnitud para VZ-15, no una validación.
+
 ## Decisiones pendientes del grupo (bloquean)
 
 - [ ] Con qué criterio se eligen las h² en los tres módulos. Queda vinculado a las decisiones 2 y 3 del documento integrado; Rostro mantiene 7,9 % por ahora
@@ -196,6 +205,12 @@ Sección cerrada el 23/10: las cuatro correcciones están hechas. El documento l
 - [x] Sección 1.2: falta un punto o un guión después de "en 3D"
 
 ---
+
+## Reemplazado el 17/11
+
+- **Tolerancias del brief para los coeficientes de g:** 0,02 (g permutado) y 0,03 (g y g · sexo con c = 0). Quedaban a 1–2,8 desvíos; desde el 12/11, 4 desvíos.
+- **Control de integración del 29/10:** ΔR² parcial promedio a menos de 0,025 de la h², con un corrimiento esperado de 0,002 a 0,004 por debajo. Reemplazado por el criterio de recuperación, con la tolerancia que fije la simulación del nulo.
+- **Punto 8 con "tolerancia 0,015":** la del paquete 2.2 se revisa con la simulación del nulo y se lee de la configuración.
 
 ## Reemplazado el 9/11
 
